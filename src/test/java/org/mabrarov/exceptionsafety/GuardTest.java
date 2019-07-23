@@ -24,25 +24,25 @@ public class GuardTest {
 
   @Test
   public void test_close_resourceIsClosed() throws Exception {
-    final AutoCloseable guarded;
-    try (final Guard guard = new Guard()) {
-      final AutoCloseable resource = mock(AutoCloseable.class);
-      guard.set(resource);
-      guarded = resource;
-    }
-    verify(guarded).close();
+    final Guard guard = new Guard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.set(resource);
+
+    guard.close();
+
+    verify(resource).close();
   }
 
   @Test
   public void test_closeTwice_resourceIsClosedOnce() throws Exception {
-    final AutoCloseable guarded;
-    try (final Guard guard = new Guard()) {
-      final AutoCloseable resource = mock(AutoCloseable.class);
-      guard.set(resource);
-      guarded = resource;
-      guard.close();
-    }
-    verify(guarded).close();
+    final Guard guard = new Guard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.set(resource);
+
+    guard.close();
+    guard.close();
+
+    verify(resource).close();
   }
 
   @Test(expected = TestException.class)
@@ -60,30 +60,35 @@ public class GuardTest {
     final AutoCloseable resource = mock(AutoCloseable.class);
     guard.set(resource);
     doThrow(new TestException()).when(resource).close();
+
     closeSuppressingTestException(guard);
     closeSuppressingTestException(guard);
+
     verify(resource, times(2)).close();
   }
 
   @Test
   public void test_release_resourceIsNotClosed() throws Exception {
-    final AutoCloseable guarded;
-    try (final Guard guard = new Guard()) {
-      final AutoCloseable resource = mock(AutoCloseable.class);
-      guard.set(resource);
-      guarded = resource;
-      assertThat(guard.release(), is(resource));
-    }
-    verify(guarded, never()).close();
+    final Guard guard = new Guard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.set(resource);
+
+    guard.release();
+    guard.close();
+
+    verify(resource, never()).close();
   }
 
   @Test
-  public void test_secondRelease_returnsNull() throws Exception {
+  public void test_release_getReturnsNull() throws Exception {
     try (final Guard guard = new Guard()) {
       final AutoCloseable resource = mock(AutoCloseable.class);
       guard.set(resource);
-      assertThat(guard.release(), is(resource));
-      assertThat(guard.release(), is(nullValue()));
+      assertThat(guard.get(), is(resource));
+
+      guard.release();
+
+      assertThat(guard.get(), is(nullValue()));
     }
   }
 

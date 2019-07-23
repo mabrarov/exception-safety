@@ -8,10 +8,18 @@ public class Guard implements AutoCloseable {
     this.resource = resource;
   }
 
-  public AutoCloseable release() {
-    AutoCloseable releasedResource = resource;
+  public AutoCloseable get() {
+    return resource;
+  }
+
+  public void release() {
     resource = null;
-    return releasedResource;
+  }
+
+  public void swap(final Guard other) {
+    final AutoCloseable thisResource = this.resource;
+    this.resource = other.resource;
+    other.resource = thisResource;
   }
 
   @Override
