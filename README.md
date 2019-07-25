@@ -55,6 +55,10 @@ mvn clean package
 Constructor providing basic exception safety.
 
 ```java
+package bar;
+
+import org.mabrarov.exceptionsafety.Guard;
+
 public class Foo implements AutoCloseable {
 
   private static AutoCloseable createResource1() throws Exception {
@@ -145,6 +149,10 @@ underlying resources which cannot be considered as guaranteed closed.
 This example is modified example #1, so some comments which exist in example #1 are omitted.
 
 ```java
+package bar;
+
+import org.mabrarov.exceptionsafety.Guard;
+
 public class Foo implements AutoCloseable {
 
   private static AutoCloseable createResource1() throws Exception {
