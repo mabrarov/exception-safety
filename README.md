@@ -1,5 +1,7 @@
 # Exception Safety
 
+[![Release](https://img.shields.io/github/release/mabrarov/exception-safety.svg)](https://github.com/mabrarov/exception-safety/releases/latest) [![License](https://img.shields.io/github/license/mabrarov/exception-safety)](https://github.com/mabrarov/exception-safety/tree/master/LICENSE)
+
 Java library to support [exception safety](https://en.wikipedia.org/wiki/Exception_safety) ([Wikipedia](https://wikipedia.org)):
 
 > 1. **No-throw guarantee**, also known as **failure transparency**: 
