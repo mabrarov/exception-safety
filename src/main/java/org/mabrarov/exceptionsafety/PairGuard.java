@@ -20,30 +20,53 @@ public class PairGuard implements AutoCloseable {
   private final Guard firstGuard = new Guard();
   private AutoCloseable second;
 
+  /**
+   * Provides no-throw guarantee.
+   */
   public void setFirst(final AutoCloseable first) {
     this.firstGuard.set(first);
   }
 
+  /**
+   * Provides no-throw guarantee.
+   */
   public void setSecond(final AutoCloseable second) {
     this.second = second;
   }
 
+  /**
+   * Provides no-throw guarantee.
+   */
   public AutoCloseable getFirst() {
     return firstGuard.get();
   }
 
+  /**
+   * Provides no-throw guarantee.
+   */
   public AutoCloseable getSecond() {
     return second;
   }
 
-  public void releaseFirst() {
-    firstGuard.release();
+  /**
+   * Provides no-throw guarantee.
+   */
+  public AutoCloseable releaseFirst() {
+    return firstGuard.release();
   }
 
-  public void releaseSecond() {
+  /**
+   * Provides no-throw guarantee.
+   */
+  public AutoCloseable releaseSecond() {
+    AutoCloseable tmp = second;
     second = null;
+    return tmp;
   }
 
+  /**
+   * Provides no-throw guarantee.
+   */
   public void release() {
     firstGuard.release();
     second = null;
