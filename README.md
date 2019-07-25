@@ -2,7 +2,7 @@
 
 [![Release](https://img.shields.io/github/release/mabrarov/exception-safety.svg)](https://github.com/mabrarov/exception-safety/releases/latest) [![License](https://img.shields.io/github/license/mabrarov/exception-safety)](https://github.com/mabrarov/exception-safety/tree/master/LICENSE)
 
-Java library to support [exception safety](https://en.wikipedia.org/wiki/Exception_safety) ([Wikipedia](https://wikipedia.org)):
+Java library to support [exception safety](https://en.wikipedia.org/wiki/Exception_safety) (from [Wikipedia](https://wikipedia.org)):
 
 > 1. **No-throw guarantee**, also known as **failure transparency**: 
 >    Operations are guaranteed to succeed and satisfy all requirements even in exceptional situations.
@@ -15,6 +15,10 @@ Java library to support [exception safety](https://en.wikipedia.org/wiki/Excepti
 >    but all invariants are preserved and there are no resource leaks (including memory leaks). 
 >    Any stored data will contain valid values which may differ from the original values.
 > 1. **No exception safety**: No guarantees are made.
+
+Providing classes which implement first 2 exception safety guarantees helps to create code which 
+provides no-leak guarantee and so prevents resource leaks which is still possible in Java when 
+"resource" means not just heap memory (like `java.io.OutputStream`).
 
 To build types providing exception safety guarantee like no-throw guarantee or strong exception safety, 
 below Java operations / statements are considered providing no-throw guarantee and are used 
