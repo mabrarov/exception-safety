@@ -17,7 +17,7 @@ public class GuardTest {
    * Ensure that no exception / error happens when empty guard is closed
    */
   @Test
-  public void test_emptyClose_doesNotThrow() throws Exception {
+  public void test_closeEmpty_doesNotThrowException() throws Exception {
     final Guard guard = new Guard();
     guard.close();
   }
@@ -46,7 +46,7 @@ public class GuardTest {
   }
 
   @Test(expected = TestException.class)
-  public void test_resourceCloseThrows_exceptionIsPropagated() throws Exception {
+  public void test_resourceCloseThrowsException_exceptionIsPropagated() throws Exception {
     try (final Guard guard = new Guard()) {
       final AutoCloseable resource = mock(AutoCloseable.class);
       guard.set(resource);
@@ -55,7 +55,8 @@ public class GuardTest {
   }
 
   @Test
-  public void test_resourceCloseThrows_secondCallStillClosesResource() throws Exception {
+  public void test_resourceCloseThrowsException_subsequentCloseStillClosesResource()
+      throws Exception {
     final Guard guard = new Guard();
     final AutoCloseable resource = mock(AutoCloseable.class);
     guard.set(resource);

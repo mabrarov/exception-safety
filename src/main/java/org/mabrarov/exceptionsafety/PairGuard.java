@@ -34,6 +34,11 @@ public class PairGuard implements AutoCloseable {
     second = null;
   }
 
+  /**
+   * Swaps this instance with another instance. Provides no-throw guarantee.
+   *
+   * @param other another instance to swap with
+   */
   public void swap(final PairGuard other) {
     this.firstGuard.swap(other.firstGuard);
     final AutoCloseable thisSecond = this.second;

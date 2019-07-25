@@ -25,7 +25,7 @@ public class NestedGuardTest {
    * Ensure that no exception / error happens when empty guard is closed
    */
   @Test
-  public void test_emptyClose_doesNotThrow() throws Exception {
+  public void test_closeEmpty_doesNotThrowException() throws Exception {
     final NestedGuard guard = new NestedGuard();
     assertThat(guard.size(), is(0));
     guard.close();
@@ -33,7 +33,7 @@ public class NestedGuardTest {
   }
 
   @Test
-  public void test_close_resourceIsClosed() throws Exception {
+  public void test_closeSingleResource_resourceIsClosed() throws Exception {
     final NestedGuard guard = new NestedGuard();
     final AutoCloseable resource = mock(AutoCloseable.class);
     guard.add(resource);
@@ -45,7 +45,7 @@ public class NestedGuardTest {
   }
 
   @Test
-  public void test_close_resourcesAreClosed() throws Exception {
+  public void test_closeMultipleResources_allResourcesAreClosed() throws Exception {
     final NestedGuard guard = new NestedGuard();
     final AutoCloseable resource1 = mock(AutoCloseable.class);
     guard.add(resource1);
@@ -70,7 +70,8 @@ public class NestedGuardTest {
   }
 
   @Test
-  public void test_closeAndResourceCloseThrowsException_exceptionsAreSuppressed() throws Exception {
+  public void test_closeAndResourceCloseThrowsException_exceptionIsPropagatedWithSuppressedExceptions()
+      throws Exception {
     final TestException closeException1 = new TestException(1);
     final TestException closeException2 = new TestException(2);
     final TestException closeException3 = new TestException(3);
@@ -117,7 +118,160 @@ public class NestedGuardTest {
   }
 
   @Test
-  public void test_addFailure_resourceIsClosed() throws Exception {
+  public void test_closeAndFirstResourceCloseThrowsException_exceptionIsPropagatedAndSizeIsReduced()
+      throws Exception {
+    final TestException closeException1 = new TestException(1);
+    final NestedGuard guard = new NestedGuard();
+    AutoCloseable resource1 = null;
+    AutoCloseable resource2 = null;
+    AutoCloseable resource3 = null;
+    AutoCloseable resource4 = null;
+    try {
+      resource1 = mock(AutoCloseable.class);
+      doThrow(closeException1).when(resource1).close();
+      guard.add(resource1);
+
+      resource2 = mock(AutoCloseable.class);
+      guard.add(resource2);
+
+      resource3 = mock(AutoCloseable.class);
+      guard.add(resource3);
+
+      resource4 = mock(AutoCloseable.class);
+      guard.add(resource4);
+
+      guard.close();
+
+      fail("Expected TestException");
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(closeException1)));
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    assertThat(guard.size(), is(1));
+  }
+
+  @Test
+  public void test_closeAndLastResourceCloseThrowsException_exceptionIsPropagatedAndSizeIsReduced()
+      throws Exception {
+    final TestException closeException4 = new TestException(4);
+    final NestedGuard guard = new NestedGuard();
+    AutoCloseable resource1 = null;
+    AutoCloseable resource2 = null;
+    AutoCloseable resource3 = null;
+    AutoCloseable resource4 = null;
+    try {
+      resource1 = mock(AutoCloseable.class);
+      guard.add(resource1);
+
+      resource2 = mock(AutoCloseable.class);
+      guard.add(resource2);
+
+      resource3 = mock(AutoCloseable.class);
+      guard.add(resource3);
+
+      resource4 = mock(AutoCloseable.class);
+      doThrow(closeException4).when(resource4).close();
+      guard.add(resource4);
+
+      guard.close();
+
+      fail("Expected TestException");
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(closeException4)));
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    assertThat(guard.size(), is(1));
+  }
+
+  @Test
+  public void test_closeAndSingleMidResourceCloseThrowsException_exceptionIsPropagatedAndSizeIsReduced()
+      throws Exception {
+    final TestException closeException2 = new TestException(2);
+    final NestedGuard guard = new NestedGuard();
+    AutoCloseable resource1 = null;
+    AutoCloseable resource2 = null;
+    AutoCloseable resource3 = null;
+    AutoCloseable resource4 = null;
+    try {
+      resource1 = mock(AutoCloseable.class);
+      guard.add(resource1);
+
+      resource2 = mock(AutoCloseable.class);
+      doThrow(closeException2).when(resource2).close();
+      guard.add(resource2);
+
+      resource3 = mock(AutoCloseable.class);
+      guard.add(resource3);
+
+      resource4 = mock(AutoCloseable.class);
+      guard.add(resource4);
+
+      guard.close();
+
+      fail("Expected TestException");
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(closeException2)));
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    assertThat(guard.size(), is(1));
+  }
+
+  @Test
+  public void test_closeAnd2MidResourcesCloseThrowException_exceptionIsPropagatedAndSizeIsReduced()
+      throws Exception {
+    final TestException closeException2 = new TestException(2);
+    final TestException closeException3 = new TestException(3);
+    final NestedGuard guard = new NestedGuard();
+    AutoCloseable resource1 = null;
+    AutoCloseable resource2 = null;
+    AutoCloseable resource3 = null;
+    AutoCloseable resource4 = null;
+    try {
+      resource1 = mock(AutoCloseable.class);
+      guard.add(resource1);
+
+      resource2 = mock(AutoCloseable.class);
+      doThrow(closeException2).when(resource2).close();
+      guard.add(resource2);
+
+      resource3 = mock(AutoCloseable.class);
+      doThrow(closeException3).when(resource3).close();
+      guard.add(resource3);
+
+      resource4 = mock(AutoCloseable.class);
+      guard.add(resource4);
+
+      guard.close();
+
+      fail("Expected TestException");
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(closeException3)));
+      final List<Throwable> suppressed = getAllSuppressed(e);
+      assertThat(suppressed, hasSize(1));
+      assertSameInstance(suppressed.get(0), closeException2);
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    assertThat(guard.size(), is(2));
+  }
+
+  @Test
+  public void test_addThrowsException_resourceIsClosed() throws Exception {
     final TestRuntimeException addException = new TestRuntimeException();
     final NestedGuard guard = spy(new NestedGuard());
     doThrow(addException).when(guard)
@@ -134,7 +288,7 @@ public class NestedGuardTest {
   }
 
   @Test
-  public void test_addFailureAndResourceCloseThrowsException_resourceIsClosedWithException()
+  public void test_addThrowsExceptionAndResourceCloseThrowsException_resourceIsClosedWithException()
       throws Exception {
     final TestRuntimeException addException = new TestRuntimeException();
     final TestException closeException = new TestException();
