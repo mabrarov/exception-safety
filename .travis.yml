@@ -36,11 +36,11 @@ matrix:
       jdk: oraclejdk9
     # Oracle JDK 11
     - dist: trusty
-      env: COVERAGE_BUILD=1
+      env: COVERAGE_BUILD=0
       jdk: oraclejdk11
     # OpenJDK 10
     - dist: bionic
-      env: COVERAGE_BUILD=1
+      env: COVERAGE_BUILD=0
       jdk: openjdk10
     # OpenJDK 11
     - dist: bionic
