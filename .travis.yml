@@ -1,0 +1,58 @@
+#
+# Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+language: java
+
+matrix:
+  include:
+    # OpenJDK 7
+    - dist: trusty
+      env: COVERAGE_BUILD=0
+      jdk: openjdk7
+    # OpenJDK 8
+    - dist: trusty
+      env: COVERAGE_BUILD=0
+      jdk: openjdk8
+    # Oracle JDK 8
+    - dist: trusty
+      env: COVERAGE_BUILD=0
+      jdk: oraclejdk8
+    # Oracle JDK 9
+    - dist: trusty
+      env: COVERAGE_BUILD=0
+      jdk: oraclejdk9
+    # Oracle JDK 11
+    - dist: trusty
+      env: COVERAGE_BUILD=1
+      jdk: oraclejdk11
+    # OpenJDK 10
+    - dist: bionic
+      env: COVERAGE_BUILD=1
+      jdk: openjdk10
+    # OpenJDK 11
+    - dist: bionic
+      env: COVERAGE_BUILD=1
+      jdk: openjdk11
+
+install: skip
+
+script:
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      export MAVEN_PROFILES=" -P jacoco";
+    else
+      export MAVEN_PROFILES="";
+    fi
+  - mvn --batch-mode clean package${MAVEN_PROFILES}
