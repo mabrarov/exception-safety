@@ -17,6 +17,7 @@ package org.mabrarov.exceptionsafety;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -89,7 +90,7 @@ public class GuardTest {
     final AutoCloseable resource = mock(AutoCloseable.class);
     guard.set(resource);
 
-    guard.release();
+    assertThat(guard.release(), is(sameInstance(resource)));
     guard.close();
 
     verify(resource, never()).close();
@@ -102,7 +103,7 @@ public class GuardTest {
       guard.set(resource);
       assertThat(guard.get(), is(resource));
 
-      guard.release();
+      assertThat(guard.release(), is(sameInstance(resource)));
 
       assertThat(guard.get(), is(nullValue()));
     }

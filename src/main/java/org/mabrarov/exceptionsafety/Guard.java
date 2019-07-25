@@ -42,9 +42,13 @@ public class Guard implements AutoCloseable {
   /**
    * Resets this instance to guard nothing. Provides no-throw guarantee. Equivalent to {@link
    * Guard#set(java.lang.AutoCloseable)} with {@code null} as {@code resource}.
+   *
+   * @return instance of {@link AutoCloseable} which was guarded, may be {@code null}.
    */
-  public void release() {
+  public AutoCloseable release() {
+    final AutoCloseable tmp = resource;
     resource = null;
+    return tmp;
   }
 
   /**

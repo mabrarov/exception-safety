@@ -177,6 +177,7 @@ public class Foo implements AutoCloseable {
   private Guard resource2 = new Guard();
   private Guard resource3 = new Guard();
 
+  // Provides no-leak guarantee
   public Foo() throws Exception {
     try (Guard guard1 = new Guard(); 
          Guard guard2 = new Guard(); 
@@ -220,4 +221,53 @@ public class Foo implements AutoCloseable {
   }
 }
 ```
- 
+
+### Example 3
+
+Guard resource to prevent resource leaks in resource factory method.
+
+This example is modified example #2, so some comments and code which exist in example #2 are omitted.
+
+```java
+package bar;
+
+import org.mabrarov.exceptionsafety.Guard;
+
+public class Foo implements AutoCloseable {
+
+  // Provides no-leak guarantee
+  private static AutoCloseable createBar() throws Exception {
+    // Create guard for resource before resource is created
+    // to avoid OOM (when creating guard) causing leak of resource.
+    try (Guard barGuard = new Guard()) {
+      AutoCloseable bar = new Bar();
+      // If this call throws exception then bar is closed by barGuard
+      configureBar(bar);
+      // Below method provides no-throw guarantee.
+      // barGuard#close() does nothing when below statement completes.
+      return barGuard.release();
+    }
+  }
+  
+  private static void configureBar(Bar bar) throws Exception {
+    // Configure "opened" instance of Bar, may throw exception.
+    // This method exists just for simplification of reading.
+  }
+
+  private AutoCloseable resource;
+
+  public Foo() throws Exception {
+    try (Guard guard = new Guard()) {
+      resource = createBar();
+      // Guard created resource till completion of constructor
+      guard.set(resource1);
+
+      doSomeInitialzation();
+      
+      // Constructor completed successfully and there is no more 
+      // need of guarding resources against resource leak.
+      guard.release();
+    }
+  }
+}
+```
