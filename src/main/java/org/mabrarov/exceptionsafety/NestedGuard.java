@@ -134,7 +134,7 @@ public class NestedGuard implements AutoCloseable {
    */
   public void set(final int index, final AutoCloseable resource) {
     if (items == null) {
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
+      throw buildIndexOutOfBoundsException(index);
     }
     items.get(index).setSecond(resource);
   }
@@ -153,7 +153,7 @@ public class NestedGuard implements AutoCloseable {
    */
   public AutoCloseable get(final int index) {
     if (items == null) {
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
+      throw buildIndexOutOfBoundsException(index);
     }
     return items.get(index).getSecond();
   }
@@ -175,11 +175,47 @@ public class NestedGuard implements AutoCloseable {
    *
    * @param index index of existing guarded instance of {@link AutoCloseable}. Should be &gt;= 0 and
    * &lt; {@link NestedGuard#size()}.
+   * @return instance of {@link AutoCloseable} which was guarded by item with given {@code index},
+   * may be {@code null}.
    * @throws IndexOutOfBoundsException if {@code index} is &lt; 0 or &gt;= {@link
    * NestedGuard#size()}.
    */
-  public void release(final int index) {
-    set(index, null);
+  public AutoCloseable release(final int index) {
+    if (items == null) {
+      throw buildIndexOutOfBoundsException(index);
+    }
+    final PairGuard item = items.get(index);
+    final AutoCloseable tmp = item.getSecond();
+    item.setSecond(null);
+    return tmp;
+  }
+
+  /**
+   * Removes existing item with given {@code index} without closing it. Provides no-throw guarantee
+   * if {@code index} is correct, i.e. &gt;= 0 and &lt; {@link NestedGuard#size()}. Resource which
+   * was guarded before is not impacted and is forgotten.
+   *
+   * @param index index of existing guarded instance of {@link AutoCloseable}. Should be &gt;= 0 and
+   * &lt; {@link NestedGuard#size()}.
+   * @return instance of {@link AutoCloseable} which was guarded by item with given {@code index},
+   * may be {@code null}.
+   * @throws IndexOutOfBoundsException if {@code index} is &lt; 0 or &gt;= {@link
+   * NestedGuard#size()}.
+   */
+  public AutoCloseable remove(final int index) {
+    if (items == null) {
+      throw buildIndexOutOfBoundsException(index);
+    }
+    final PairGuard removedItem = items.get(index);
+    // If not last item, then exclude removed item from chain
+    if (index < items.size() - 1) {
+      final PairGuard nextItem = items.get(index + 1);
+      nextItem.setFirst(removedItem.getFirst());
+    }
+    // Assuming that java.util.ArrayList#remove(int index) provides no-throw guarantee
+    // if index is correct
+    items.remove(index);
+    return removedItem.releaseSecond();
   }
 
   /**
@@ -253,6 +289,10 @@ public class NestedGuard implements AutoCloseable {
    */
   protected void addItem(final List<PairGuard> items, final PairGuard item) {
     items.add(item);
+  }
+
+  private static IndexOutOfBoundsException buildIndexOutOfBoundsException(final int index) {
+    return new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
   }
 
 }

@@ -18,12 +18,14 @@ package org.mabrarov.exceptionsafety;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -322,6 +324,136 @@ public class NestedGuardTest {
       assertSameInstance(suppressed.get(0), closeException);
     }
     verify(resource).close();
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_removeEmpty_indexOutOfBoundException() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    guard.remove(0);
+  }
+
+  @Test
+  public void test_removeSingleItem_becomesEmpty() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.add(resource);
+    assertThat(guard.size(), is(not(0)));
+    assertThat(guard.remove(0), is(sameInstance(resource)));
+    guard.close();
+    assertThat(guard.size(), is(0));
+    verify(resource, never()).close();
+  }
+
+  @Test
+  public void test_removeFirstItem_removedItemNotClosedAndSizeReduced() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    final AutoCloseable resource3 = mock(AutoCloseable.class);
+    guard.add(resource3);
+
+    final AutoCloseable resource4 = mock(AutoCloseable.class);
+    guard.add(resource4);
+
+    assertThat(guard.remove(0), is(sameInstance(resource1)));
+    assertThat(guard.size(), is(3));
+
+    guard.close();
+
+    final InOrder inOrder = inOrder(resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    verify(resource1, never()).close();
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test
+  public void test_removeLastItem_removedItemNotClosedAndSizeReduced() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    final AutoCloseable resource3 = mock(AutoCloseable.class);
+    guard.add(resource3);
+
+    final AutoCloseable resource4 = mock(AutoCloseable.class);
+    guard.add(resource4);
+
+    assertThat(guard.remove(3), is(sameInstance(resource4)));
+    assertThat(guard.size(), is(3));
+
+    guard.close();
+
+    final InOrder inOrder = inOrder(resource1, resource2, resource3);
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    verify(resource4, never()).close();
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test
+  public void test_removeMidItem_removedItemNotClosedAndSizeReduced() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    final AutoCloseable resource3 = mock(AutoCloseable.class);
+    guard.add(resource3);
+
+    final AutoCloseable resource4 = mock(AutoCloseable.class);
+    guard.add(resource4);
+
+    assertThat(guard.remove(1), is(sameInstance(resource2)));
+    assertThat(guard.size(), is(3));
+
+    guard.close();
+
+    final InOrder inOrder = inOrder(resource1, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource1).close();
+    verify(resource2, never()).close();
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test
+  public void test_removeItemBeforeLast_removedItemNotClosedAndSizeReduced() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    final AutoCloseable resource3 = mock(AutoCloseable.class);
+    guard.add(resource3);
+
+    final AutoCloseable resource4 = mock(AutoCloseable.class);
+    guard.add(resource4);
+
+    assertThat(guard.remove(2), is(sameInstance(resource3)));
+    assertThat(guard.size(), is(3));
+
+    guard.close();
+
+    final InOrder inOrder = inOrder(resource1, resource2, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    verify(resource3, never()).close();
     assertThat(guard.size(), is(0));
   }
 
