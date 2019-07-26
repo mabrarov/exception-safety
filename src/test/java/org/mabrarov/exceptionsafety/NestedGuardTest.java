@@ -328,7 +328,7 @@ public class NestedGuardTest {
   }
 
   @Test(expected = IndexOutOfBoundsException.class)
-  public void test_removeEmpty_indexOutOfBoundException() throws Exception {
+  public void test_removeEmpty_indexOutOfBoundException() {
     final NestedGuard guard = new NestedGuard();
     guard.remove(0);
   }
@@ -343,6 +343,15 @@ public class NestedGuardTest {
     guard.close();
     assertThat(guard.size(), is(0));
     verify(resource, never()).close();
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_removeSingleItemInvalidIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.add(resource);
+    assertThat(guard.size(), is(not(0)));
+    guard.remove(1);
   }
 
   @Test
