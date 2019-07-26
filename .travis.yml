@@ -16,6 +16,10 @@
 
 language: java
 
+cache:
+  directories:
+    - ${HOME}/.m2/repository/
+
 env:
   global:
     - COVERAGE_BUILD: 0
