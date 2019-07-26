@@ -26,6 +26,10 @@ env:
 
 matrix:
   include:
+    # OpenJDK 11
+    - dist: bionic
+      env: COVERAGE_BUILD=1
+      jdk: openjdk11
     # OpenJDK 7
     - dist: trusty
       jdk: openjdk7
@@ -44,10 +48,6 @@ matrix:
     # OpenJDK 10
     - dist: bionic
       jdk: openjdk10
-    # OpenJDK 11
-    - dist: bionic
-      env: COVERAGE_BUILD=1
-      jdk: openjdk11
 
 install: skip
 
@@ -64,5 +64,5 @@ after_success:
   - cd ${TRAVIS_BUILD_DIR}
   - if [ "${COVERAGE_BUILD}" != 0 ]; then
       echo "Sending coverage data to Codecov" &&
-      bash <(curl --connect-timeout ${CURL_CONNECT_TIMEOUT} --max-time ${CURL_MAX_TIME} --retry ${CURL_RETRY} --retry-delay ${CURL_RETRY_DELAY} -s https://codecov.io/bash) -Z -f ${TRAVIS_BUILD_DIR}/target/jacoco.exec -R ${TRAVIS_BUILD_DIR};
+      bash <(curl --connect-timeout ${CURL_CONNECT_TIMEOUT} --max-time ${CURL_MAX_TIME} --retry ${CURL_RETRY} --retry-delay ${CURL_RETRY_DELAY} -s https://codecov.io/bash) -Z;
     fi
