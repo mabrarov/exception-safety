@@ -2,6 +2,11 @@
 
 [![Release](https://img.shields.io/github/release/mabrarov/exception-safety.svg)](https://github.com/mabrarov/exception-safety/releases/latest) [![License](https://img.shields.io/github/license/mabrarov/exception-safety)](https://github.com/mabrarov/exception-safety/tree/master/LICENSE)
 
+Branch | Linux | Coverage
+-------|-------|---------
+[master](https://github.com/mabrarov/exception-safety/tree/master) | [![Travis CI build status](https://travis-ci.org/mabrarov/exception-safety.svg?branch=master)](https://travis-ci.org/mabrarov/exception-safety) | [![Linux code coverage status](https://codecov.io/gh/mabrarov/exception-safety/branch/master/graph/badge.svg)](https://codecov.io/gh/mabrarov/exception-safety/branch/master)
+[develop](https://github.com/mabrarov/exception-safety/tree/develop) | [![Travis CI build status](https://travis-ci.org/mabrarov/exception-safety.svg?branch=develop)](https://travis-ci.org/mabrarov/exception-safety) | [![Linux code coverage status](https://codecov.io/gh/mabrarov/exception-safety/branch/develop/graph/badge.svg)](https://codecov.io/gh/mabrarov/exception-safety/branch/develop)
+
 Java library to support [exception safety](https://en.wikipedia.org/wiki/Exception_safety) (from [Wikipedia](https://wikipedia.org)):
 
 > 1. **No-throw guarantee**, also known as **failure transparency**: 

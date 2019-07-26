@@ -16,31 +16,33 @@
 
 language: java
 
+env:
+  global:
+    - COVERAGE_BUILD: 0
+    - CURL_CONNECT_TIMEOUT: 300
+    - CURL_MAX_TIME: 1800
+    - CURL_RETRY: 10
+    - CURL_RETRY_DELAY: 10
+
 matrix:
   include:
     # OpenJDK 7
     - dist: trusty
-      env: COVERAGE_BUILD=0
       jdk: openjdk7
     # OpenJDK 8
     - dist: trusty
-      env: COVERAGE_BUILD=0
       jdk: openjdk8
     # Oracle JDK 8
     - dist: trusty
-      env: COVERAGE_BUILD=0
       jdk: oraclejdk8
     # Oracle JDK 9
     - dist: trusty
-      env: COVERAGE_BUILD=0
       jdk: oraclejdk9
     # Oracle JDK 11
     - dist: trusty
-      env: COVERAGE_BUILD=0
       jdk: oraclejdk11
     # OpenJDK 10
     - dist: bionic
-      env: COVERAGE_BUILD=0
       jdk: openjdk10
     # OpenJDK 11
     - dist: bionic
@@ -55,4 +57,12 @@ script:
     else
       export MAVEN_PROFILES="";
     fi
+  - cd ${TRAVIS_BUILD_DIR}
   - mvn --batch-mode clean package${MAVEN_PROFILES}
+
+after_success:
+  - cd ${TRAVIS_BUILD_DIR}
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      echo "Sending coverage data to Codecov" &&
+      bash <(curl --connect-timeout ${CURL_CONNECT_TIMEOUT} --max-time ${CURL_MAX_TIME} --retry ${CURL_RETRY} --retry-delay ${CURL_RETRY_DELAY} -s https://codecov.io/bash) -Z -f ${TRAVIS_BUILD_DIR}/target/jacoco.exec -R ${TRAVIS_BUILD_DIR};
+    fi
