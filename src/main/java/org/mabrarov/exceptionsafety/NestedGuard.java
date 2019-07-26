@@ -121,7 +121,8 @@ public class NestedGuard implements AutoCloseable {
   /**
    * Sets existing item with given {@code index} to guard another instance of {@link AutoCloseable}.
    * Provides no-throw guarantee if {@code index} is correct, i.e. &gt;= 0 and &lt; {@link
-   * NestedGuard#size()}. Resource which was guarded before is not impacted and is forgotten.
+   * NestedGuard#size()}, otherwise provides strong exception safety. Resource which was guarded
+   * before is not impacted and is forgotten.
    *
    * @param index index of existing guarded instance of {@link AutoCloseable}. Should be &gt;= 0 and
    * &lt; {@link NestedGuard#size()}.
@@ -140,7 +141,7 @@ public class NestedGuard implements AutoCloseable {
   /**
    * Retrieves existing guarded instance of {@link AutoCloseable} with given {@code index}. Provides
    * no-throw guarantee if {@code index} is correct, i.e. &gt;= 0 and &lt; {@link
-   * NestedGuard#size()}.
+   * NestedGuard#size()}, otherwise provides strong exception safety.
    *
    * @param index index of existing guarded instance of {@link AutoCloseable}. Should be &gt;= 0 and
    * &lt; {@link NestedGuard#size()}.
@@ -164,10 +165,10 @@ public class NestedGuard implements AutoCloseable {
 
   /**
    * Sets existing item with given {@code index} to guard nothing. Provides no-throw guarantee if
-   * {@code index} is correct, i.e. &gt;= 0 and &lt; {@link NestedGuard#size()}. Resource which was
-   * guarded before is not impacted and is forgotten. {@link NestedGuard#size()} remains the same,
-   * i.e. is not impacted. Equivalent to {@link NestedGuard#set(int, AutoCloseable)} where {@code
-   * resource} is {@code null}.
+   * {@code index} is correct, i.e. &gt;= 0 and &lt; {@link NestedGuard#size()}, otherwise provides
+   * strong exception safety. Resource which was guarded before is not impacted and is forgotten.
+   * {@link NestedGuard#size()} remains the same, i.e. is not impacted. Equivalent to {@link
+   * NestedGuard#set(int, AutoCloseable)} where {@code resource} is {@code null}.
    *
    * @param index index of existing guarded instance of {@link AutoCloseable}. Should be &gt;= 0 and
    * &lt; {@link NestedGuard#size()}.
@@ -186,8 +187,9 @@ public class NestedGuard implements AutoCloseable {
 
   /**
    * Removes existing item with given {@code index} without closing it. Provides no-throw guarantee
-   * if {@code index} is correct, i.e. &gt;= 0 and &lt; {@link NestedGuard#size()}. Resource which
-   * was guarded before is not impacted and is forgotten.
+   * if {@code index} is correct, i.e. &gt;= 0 and &lt; {@link NestedGuard#size()}, otherwise
+   * provides strong exception safety. Resource which was guarded before is not impacted and is
+   * forgotten.
    *
    * @param index index of existing guarded instance of {@link AutoCloseable}. Should be &gt;= 0 and
    * &lt; {@link NestedGuard#size()}.
