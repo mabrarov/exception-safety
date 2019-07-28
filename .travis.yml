@@ -34,11 +34,10 @@ matrix:
     - dist: bionic
       env: COVERAGE_BUILD=1
       jdk: openjdk11
-    # OpenJDK 7.
-    # Disabled due to Mockito 3.x (required for mocking of final methods) requires Java 8+
-    #- dist: trusty
-    #jdk: openjdk7
-    #OpenJDK 8
+    # OpenJDK 7
+    - dist: trusty
+      jdk: openjdk7
+    # OpenJDK 8
     - dist: trusty
       jdk: openjdk8
     # Oracle JDK 8
