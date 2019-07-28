@@ -289,6 +289,55 @@ public class NestedGuardTest {
   }
 
   @Test
+  public void test_closeAndResourceCloseThrowsExceptionAndAddSuppressedThrowsError_resourcesAreClosed()
+      throws Exception {
+    final TestException closeException1 = new TestException(1);
+    final TestException closeException2 = new TestException(2);
+    final TestException closeException3 = new TestException(3);
+    final TestException closeException4 = spy(new TestException(4));
+    final TestError addSuppressedError = new TestError(3);
+    doThrow(addSuppressedError).when(closeException4).addSuppressed(closeException3);
+    final NestedGuard guard = new NestedGuard();
+    AutoCloseable resource1 = null;
+    AutoCloseable resource2 = null;
+    AutoCloseable resource3 = null;
+    AutoCloseable resource4 = null;
+    try {
+      resource1 = mock(AutoCloseable.class);
+      doThrow(closeException1).when(resource1).close();
+      guard.add(resource1);
+
+      resource2 = mock(AutoCloseable.class);
+      doThrow(closeException2).when(resource2).close();
+      guard.add(resource2);
+
+      resource3 = mock(AutoCloseable.class);
+      doThrow(closeException3).when(resource3).close();
+      guard.add(resource3);
+
+      resource4 = mock(AutoCloseable.class);
+      doThrow(closeException4).when(resource4).close();
+      guard.add(resource4);
+
+      guard.close();
+
+      fail("Expected TestError");
+    } catch (final TestError e) {
+      assertThat(e, is(sameInstance(addSuppressedError)));
+      // Refer to notes about nesting of exceptions performed by NestedGuard#close.
+      // Because of difference in nesting of exceptions (comparing to try-with-resources)
+      // closeException1, closeException2 and closeException3 are lost while with try-with-resources
+      // only closeException4 is lost
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    assertThat(guard.size(), is(4));
+  }
+
+  @Test
   public void test_closeAndResourceCloseThrowsError_errorIsPropagatedWithSuppressedErrors()
       throws Exception {
     final TestError closeError1 = new TestError(1);
