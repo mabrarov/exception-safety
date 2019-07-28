@@ -144,6 +144,9 @@ public class GuardTest {
     assertThat(guard.get(), is(nullValue()));
     assertThat(empty.get(), is(resource));
 
+    guard.close();
+    verify(resource, never()).close();
+
     empty.close();
     verify(resource).close();
   }
@@ -162,6 +165,9 @@ public class GuardTest {
 
     assertThat(guard.get(), is(nullValue()));
     assertThat(empty.get(), is(resource));
+
+    guard.close();
+    verify(resource, never()).close();
 
     empty.close();
     verify(resource).close();

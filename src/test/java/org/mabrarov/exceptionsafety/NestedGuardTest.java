@@ -38,6 +38,159 @@ import org.mockito.Matchers;
 
 public class NestedGuardTest {
 
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_getEmpty_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    guard.get(0);
+  }
+
+  @Test
+  public void test_get_returnsResource() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    assertThat(guard.get(0), is(sameInstance(resource1)));
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+    assertThat(guard.get(0), is(sameInstance(resource1)));
+    assertThat(guard.get(1), is(sameInstance(resource2)));
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_getSmallIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    guard.get(-1);
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_getLargeIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    guard.get(2);
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_setEmpty_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+
+    guard.set(0, resource);
+  }
+
+  @Test
+  public void test_set_changesGuardedInstance() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    assertThat(guard.get(0), is(sameInstance(resource1)));
+
+    guard.set(0, resource2);
+
+    assertThat(guard.get(0), is(sameInstance(resource2)));
+
+    guard.close();
+    verify(resource1, never()).close();
+    verify(resource2).close();
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_setSmallIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+    final AutoCloseable resource3 = mock(AutoCloseable.class);
+
+    guard.set(-1, resource3);
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_setLargeIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+    final AutoCloseable resource3 = mock(AutoCloseable.class);
+
+    guard.set(2, resource3);
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_releaseByIndexEmpty_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    guard.release(0);
+  }
+
+  @Test
+  public void test_releaseByIndex_resourceIsNotClosed() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.add(resource);
+    assertThat(guard.size(), is(1));
+
+    assertThat(guard.release(0), is(sameInstance(resource)));
+    assertThat(guard.size(), is(1));
+
+    guard.close();
+    verify(resource, never()).close();
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_releaseSmallIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    guard.release(-1);
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_releaseLargeIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    guard.release(2);
+  }
+
+
+  @Test
+  public void test_releaseEmpty_doesNotThrowException() {
+    final NestedGuard guard = new NestedGuard();
+    guard.release();
+  }
+
+  @Test
+  public void test_release_resourceIsNotClosed() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.add(resource);
+    assertThat(guard.size(), is(1));
+
+    guard.release();
+    assertThat(guard.size(), is(0));
+
+    guard.close();
+    verify(resource, never()).close();
+  }
+
   /**
    * Ensure that no exception / error happens when empty guard is closed
    */
@@ -464,6 +617,74 @@ public class NestedGuardTest {
     inOrder.verify(resource1).close();
     verify(resource3, never()).close();
     assertThat(guard.size(), is(0));
+  }
+
+  @Test
+  public void test_swapNonEmptyWithEmpty_becomesEmpty() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.add(resource);
+    assertThat(guard.get(0), is(resource));
+
+    final NestedGuard empty = new NestedGuard();
+    assertThat(empty.size(), is(0));
+
+    guard.swap(empty);
+
+    assertThat(guard.size(), is(0));
+    assertThat(empty.get(0), is(resource));
+
+    guard.close();
+    verify(resource, never()).close();
+
+    empty.close();
+    verify(resource).close();
+  }
+
+  @Test
+  public void test_swapEmptyWithNonEmpty_becomesNonEmpty() throws Exception {
+    final NestedGuard empty = new NestedGuard();
+    assertThat(empty.size(), is(0));
+
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.add(resource);
+    assertThat(guard.get(0), is(resource));
+
+    empty.swap(guard);
+
+    assertThat(guard.size(), is(0));
+    assertThat(empty.get(0), is(resource));
+
+    guard.close();
+    verify(resource, never()).close();
+
+    empty.close();
+    verify(resource).close();
+  }
+
+  @Test
+  public void test_swap_resourcesAreSwapped() throws Exception {
+    final NestedGuard guard1 = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard1.add(resource1);
+    assertThat(guard1.get(0), is(resource1));
+
+    final NestedGuard guard2 = new NestedGuard();
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard2.add(resource2);
+    assertThat(guard2.get(0), is(resource2));
+
+    guard1.swap(guard2);
+
+    assertThat(guard1.get(0), is(resource2));
+    assertThat(guard2.get(0), is(resource1));
+
+    guard1.close();
+    verify(resource2).close();
+
+    guard2.close();
+    verify(resource1).close();
   }
 
   private static List<Throwable> getAllSuppressed(final Throwable throwable) {
