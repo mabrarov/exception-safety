@@ -34,6 +34,6 @@ public class TestError extends Error {
 
   @Override
   public String toString() {
-    return "TestException{" + "id=" + id + '}';
+    return "TestError{" + "id=" + id + '}';
   }
 }
