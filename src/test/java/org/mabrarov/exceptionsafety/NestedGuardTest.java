@@ -324,6 +324,10 @@ public class NestedGuardTest {
       fail("Expected TestError");
     } catch (final TestError e) {
       assertThat(e, is(sameInstance(addSuppressedError)));
+      // Refer to notes about nesting of exceptions performed by NestedGuard#close.
+      // Because of difference in nesting of exceptions (comparing to try-with-resources)
+      // closeException1, closeException2 and closeException3 are lost while with try-with-resources
+      // only closeException4 is lost
     }
     final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
     inOrder.verify(resource4).close();
