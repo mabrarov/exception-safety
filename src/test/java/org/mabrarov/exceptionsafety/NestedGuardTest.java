@@ -276,9 +276,57 @@ public class NestedGuardTest {
       assertThat(e, is(sameInstance(closeException4)));
       final List<Throwable> suppressed = getAllSuppressed(e);
       assertThat(suppressed, hasSize(3));
-      assertSameInstance(suppressed.get(0), closeException3);
-      assertSameInstance(suppressed.get(1), closeException2);
-      assertSameInstance(suppressed.get(2), closeException1);
+      assertSameInstance(suppressed.get(0), TestException.class, closeException3);
+      assertSameInstance(suppressed.get(1), TestException.class, closeException2);
+      assertSameInstance(suppressed.get(2), TestException.class, closeException1);
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    assertThat(guard.size(), is(4));
+  }
+
+  @Test
+  public void test_closeAndResourceCloseThrowsError_errorIsPropagatedWithSuppressedErrors()
+      throws Exception {
+    final TestError closeError1 = new TestError(1);
+    final TestError closeError2 = new TestError(2);
+    final TestError closeError3 = new TestError(3);
+    final TestError closeError4 = new TestError(4);
+    final NestedGuard guard = new NestedGuard();
+    AutoCloseable resource1 = null;
+    AutoCloseable resource2 = null;
+    AutoCloseable resource3 = null;
+    AutoCloseable resource4 = null;
+    try {
+      resource1 = mock(AutoCloseable.class);
+      doThrow(closeError1).when(resource1).close();
+      guard.add(resource1);
+
+      resource2 = mock(AutoCloseable.class);
+      doThrow(closeError2).when(resource2).close();
+      guard.add(resource2);
+
+      resource3 = mock(AutoCloseable.class);
+      doThrow(closeError3).when(resource3).close();
+      guard.add(resource3);
+
+      resource4 = mock(AutoCloseable.class);
+      doThrow(closeError4).when(resource4).close();
+      guard.add(resource4);
+
+      guard.close();
+
+      fail("Expected TestError");
+    } catch (final TestError e) {
+      assertThat(e, is(sameInstance(closeError4)));
+      final List<Throwable> suppressed = getAllSuppressed(e);
+      assertThat(suppressed, hasSize(3));
+      assertSameInstance(suppressed.get(0), TestError.class, closeError3);
+      assertSameInstance(suppressed.get(1), TestError.class, closeError2);
+      assertSameInstance(suppressed.get(2), TestError.class, closeError1);
     }
     final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
     inOrder.verify(resource4).close();
@@ -431,7 +479,7 @@ public class NestedGuardTest {
       assertThat(e, is(sameInstance(closeException3)));
       final List<Throwable> suppressed = getAllSuppressed(e);
       assertThat(suppressed, hasSize(1));
-      assertSameInstance(suppressed.get(0), closeException2);
+      assertSameInstance(suppressed.get(0), TestException.class, closeException2);
     }
     final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
     inOrder.verify(resource4).close();
@@ -471,6 +519,23 @@ public class NestedGuardTest {
   }
 
   @Test
+  public void test_addThrowsError_resourceIsClosed() throws Exception {
+    final TestError addError = new TestError();
+    final NestedGuard guard = spy(new NestedGuard());
+    doThrow(addError).when(guard)
+        .addItem(Matchers.<List<PairGuard>>any(), Matchers.<PairGuard>any());
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    try {
+      guard.add(resource);
+      fail("Expected TestRuntimeException");
+    } catch (final TestError e) {
+      assertThat(e, is(sameInstance(addError)));
+    }
+    verify(resource).close();
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test
   public void test_addThrowsExceptionAndResourceCloseThrowsException_resourceIsClosedWithException()
       throws Exception {
     final TestRuntimeException addException = new TestRuntimeException();
@@ -487,7 +552,30 @@ public class NestedGuardTest {
       assertThat(e, is(sameInstance(addException)));
       final List<Throwable> suppressed = getAllSuppressed(e);
       assertThat(suppressed, hasSize(1));
-      assertSameInstance(suppressed.get(0), closeException);
+      assertSameInstance(suppressed.get(0), TestException.class, closeException);
+    }
+    verify(resource).close();
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test
+  public void test_addThrowsErrorAndResourceCloseThrowsError_resourceIsClosedWithError()
+      throws Exception {
+    final TestError addError = new TestError(1);
+    final TestError closeError = new TestError(2);
+    final NestedGuard guard = spy(new NestedGuard());
+    doThrow(addError).when(guard)
+        .addItem(Matchers.<List<PairGuard>>any(), Matchers.<PairGuard>any());
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    doThrow(closeError).when(resource).close();
+    try {
+      guard.add(resource);
+      fail("Expected TestError");
+    } catch (final TestError e) {
+      assertThat(e, is(sameInstance(addError)));
+      final List<Throwable> suppressed = getAllSuppressed(e);
+      assertThat(suppressed, hasSize(1));
+      assertSameInstance(suppressed.get(0), TestError.class, closeError);
     }
     verify(resource).close();
     assertThat(guard.size(), is(0));
@@ -735,9 +823,10 @@ public class NestedGuardTest {
     return throwables;
   }
 
-  private static void assertSameInstance(final Throwable actual, final TestException expected) {
-    assertThat(actual, is(instanceOf(TestException.class)));
-    assertThat((TestException) actual, is(sameInstance(expected)));
+  private static <T> void assertSameInstance(final Throwable actual, final Class<T> expectedType,
+      final T expected) {
+    assertThat(actual, is(instanceOf(expectedType)));
+    assertThat(expectedType.cast(actual), is(sameInstance(expected)));
   }
 
 }
