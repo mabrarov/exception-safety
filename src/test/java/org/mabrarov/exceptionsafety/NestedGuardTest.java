@@ -33,7 +33,6 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Matchers;
@@ -289,7 +288,6 @@ public class NestedGuardTest {
     assertThat(guard.size(), is(4));
   }
 
-  @Ignore("Mocking of final methods with Mockito requires mock-maker-inline extension (https://github.com/mockito/mockito/wiki/What%27s-new-in-Mockito-2#unmockable) which doesn't work on Java 7")
   @Test
   public void test_closeAndResourceCloseThrowsExceptionAndAddSuppressedThrowsError_resourcesAreClosed()
       throws Exception {
