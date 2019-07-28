@@ -15,10 +15,14 @@
  */
 package org.mabrarov.exceptionsafety;
 
+import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -83,6 +87,93 @@ public class PairGuardTest {
   }
 
   @Test
+  public void test_closeFirstCloseThrows_resourcesAreClosed() throws Exception {
+    final TestException closeException = new TestException();
+    final PairGuard guard = new PairGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    doThrow(closeException).when(resource1).close();
+    guard.setFirst(resource1);
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.setSecond(resource2);
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    try {
+      guard.close();
+      fail("Expected TestException");
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(closeException)));
+    }
+
+    assertThat(guard.getFirst(), is(sameInstance(resource1)));
+    assertThat(guard.getSecond(), is(nullValue()));
+
+    final InOrder inOrder = inOrder(resource1, resource2);
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+  }
+
+  @Test
+  public void test_closeSecondCloseThrows_resourcesAreClosed() throws Exception {
+    final TestException closeException = new TestException();
+    final PairGuard guard = new PairGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.setFirst(resource1);
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    doThrow(closeException).when(resource2).close();
+    guard.setSecond(resource2);
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    try {
+      guard.close();
+      fail("Expected TestException");
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(closeException)));
+    }
+
+    assertThat(guard.getFirst(), is(nullValue()));
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    final InOrder inOrder = inOrder(resource1, resource2);
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+  }
+
+  @Test
+  public void test_closeBothCloseThrows_resourcesAreClosed() throws Exception {
+    final TestException closeException1 = new TestException(1);
+    final TestException closeException2 = new TestException(2);
+    final PairGuard guard = new PairGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    doThrow(closeException1).when(resource1).close();
+    guard.setFirst(resource1);
+
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    doThrow(closeException2).when(resource2).close();
+    guard.setSecond(resource2);
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    try {
+      guard.close();
+      fail("Expected TestException");
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(closeException2)));
+      final Throwable[] suppressed = e.getSuppressed();
+      assertThat(suppressed, is(arrayWithSize(1)));
+      assertThat(suppressed[0], is(instanceOf(TestException.class)));
+      assertThat((TestException) suppressed[0], is(sameInstance(closeException1)));
+    }
+
+    assertThat(guard.getFirst(), is(sameInstance(resource1)));
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    final InOrder inOrder = inOrder(resource1, resource2);
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+  }
+
+  @Test
   public void test_releaseEmpty_doesNotThrowException() throws Exception {
     final PairGuard guard = new PairGuard();
     guard.release();
@@ -132,6 +223,56 @@ public class PairGuardTest {
 
     guard.close();
     verify(resource1, never()).close();
+    verify(resource2, never()).close();
+  }
+
+  @Test
+  public void test_releaseFirstEmpty_doesNotThrowException() throws Exception {
+    final PairGuard guard = new PairGuard();
+    assertThat(guard.releaseFirst(), is(nullValue()));
+  }
+
+  @Test
+  public void test_releaseFirst_firstIsNotClosed() throws Exception {
+    final PairGuard guard = new PairGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.setFirst(resource1);
+    assertThat(guard.getFirst(), is(sameInstance(resource1)));
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.setSecond(resource2);
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    assertThat(guard.releaseFirst(), is(sameInstance(resource1)));
+    assertThat(guard.getFirst(), is(nullValue()));
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    guard.close();
+    verify(resource1, never()).close();
+    verify(resource2).close();
+  }
+
+  @Test
+  public void test_releaseSecondEmpty_doesNotThrowException() throws Exception {
+    final PairGuard guard = new PairGuard();
+    assertThat(guard.releaseSecond(), is(nullValue()));
+  }
+
+  @Test
+  public void test_releaseSecond_secondIsNotClosed() throws Exception {
+    final PairGuard guard = new PairGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.setFirst(resource1);
+    assertThat(guard.getFirst(), is(sameInstance(resource1)));
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.setSecond(resource2);
+    assertThat(guard.getSecond(), is(sameInstance(resource2)));
+
+    assertThat(guard.releaseSecond(), is(sameInstance(resource2)));
+    assertThat(guard.getFirst(), is(sameInstance(resource1)));
+    assertThat(guard.getSecond(), is(nullValue()));
+
+    guard.close();
+    verify(resource1).close();
     verify(resource2, never()).close();
   }
 
