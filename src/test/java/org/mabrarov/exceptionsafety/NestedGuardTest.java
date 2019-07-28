@@ -34,9 +34,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Matchers;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+@PrepareForTest(TestException.class)
+@RunWith(PowerMockRunner.class)
 public class NestedGuardTest {
 
   @Test(expected = IndexOutOfBoundsException.class)
@@ -294,7 +300,7 @@ public class NestedGuardTest {
     final TestException closeException1 = new TestException(1);
     final TestException closeException2 = new TestException(2);
     final TestException closeException3 = new TestException(3);
-    final TestException closeException4 = spy(new TestException(4));
+    final TestException closeException4 = PowerMockito.spy(new TestException(4));
     final TestError addSuppressedError = new TestError(3);
     doThrow(addSuppressedError).when(closeException4).addSuppressed(closeException3);
     final NestedGuard guard = new NestedGuard();
