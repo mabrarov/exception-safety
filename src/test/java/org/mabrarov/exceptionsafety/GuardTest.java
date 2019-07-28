@@ -29,6 +29,51 @@ import org.junit.Test;
 
 public class GuardTest {
 
+  @Test
+  public void test_getEmpty_returnsNull() {
+    final Guard guard = new Guard();
+    assertThat(guard.get(), is(nullValue()));
+  }
+
+  @Test
+  public void test_get_returnsResource() {
+    final Guard guard = new Guard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.set(resource);
+    assertThat(guard.get(), is(sameInstance(resource)));
+  }
+
+  @Test
+  public void test_releaseEmpty_returnsNull() {
+    final Guard guard = new Guard();
+    assertThat(guard.release(), is(nullValue()));
+  }
+
+  @Test
+  public void test_release_resourceIsNotClosed() throws Exception {
+    final Guard guard = new Guard();
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.set(resource);
+
+    assertThat(guard.release(), is(sameInstance(resource)));
+    guard.close();
+
+    verify(resource, never()).close();
+  }
+
+  @Test
+  public void test_release_getReturnsNull() throws Exception {
+    try (final Guard guard = new Guard()) {
+      final AutoCloseable resource = mock(AutoCloseable.class);
+      guard.set(resource);
+      assertThat(guard.get(), is(resource));
+
+      guard.release();
+
+      assertThat(guard.get(), is(nullValue()));
+    }
+  }
+
   /**
    * Ensure that no exception / error happens when empty guard is closed
    */
@@ -82,31 +127,6 @@ public class GuardTest {
     closeSuppressingTestException(guard);
 
     verify(resource, times(2)).close();
-  }
-
-  @Test
-  public void test_release_resourceIsNotClosed() throws Exception {
-    final Guard guard = new Guard();
-    final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
-
-    assertThat(guard.release(), is(sameInstance(resource)));
-    guard.close();
-
-    verify(resource, never()).close();
-  }
-
-  @Test
-  public void test_release_getReturnsNull() throws Exception {
-    try (final Guard guard = new Guard()) {
-      final AutoCloseable resource = mock(AutoCloseable.class);
-      guard.set(resource);
-      assertThat(guard.get(), is(resource));
-
-      assertThat(guard.release(), is(sameInstance(resource)));
-
-      assertThat(guard.get(), is(nullValue()));
-    }
   }
 
   @Test
