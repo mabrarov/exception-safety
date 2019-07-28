@@ -22,6 +22,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -441,6 +442,18 @@ public class NestedGuardTest {
   }
 
   @Test
+  public void test_closeEmptyItems_doesNotThrowException() throws Exception {
+    final NestedGuard guard = spy(new NestedGuard());
+    doNothing().when(guard).addItem(Matchers.<List<PairGuard>>any(), Matchers.<PairGuard>any());
+    final AutoCloseable resource = mock(AutoCloseable.class);
+    guard.add(resource);
+    assertThat(guard.size(), is(0));
+
+    guard.close();
+    verify(resource, never()).close();
+  }
+
+  @Test
   public void test_addThrowsException_resourceIsClosed() throws Exception {
     final TestRuntimeException addException = new TestRuntimeException();
     final NestedGuard guard = spy(new NestedGuard());
@@ -505,6 +518,28 @@ public class NestedGuardTest {
     guard.add(resource);
     assertThat(guard.size(), is(not(0)));
     guard.remove(1);
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_removeSmallIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    guard.remove(-1);
+  }
+
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void test_removeLargeIndex_indexOutOfBoundException() {
+    final NestedGuard guard = new NestedGuard();
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    guard.add(resource1);
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    guard.add(resource2);
+
+    guard.remove(2);
   }
 
   @Test
