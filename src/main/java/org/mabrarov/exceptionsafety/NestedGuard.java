@@ -210,8 +210,7 @@ public class NestedGuard implements AutoCloseable {
    */
   @Override
   public void close() throws Exception {
-    // All operations except org.mabrarov.exceptionsafety.PairGuard#close are assumed to provide
-    // no-throw guarantee
+    // All operations except AutoCloseable#close are assumed to provide no-throw guarantee
     if (items == null) {
       return;
     }
