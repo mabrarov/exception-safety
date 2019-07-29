@@ -18,10 +18,6 @@ package org.mabrarov.exceptionsafety;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {@link NestedGuard#close()} method uses recursion which nesting size is 2 * (n - 1), where {@code
- * n} is the number of guarded instances of {@link AutoCloseable}.
- */
 public class NestedGuard implements AutoCloseable {
 
   private static class AddGuard implements AutoCloseable {
@@ -43,50 +39,15 @@ public class NestedGuard implements AutoCloseable {
     }
   }
 
-  private static class CleanGuard implements AutoCloseable {
-
-    private ArrayList<PairGuard> resource;
-
-    public void set(final ArrayList<PairGuard> resource) {
-      this.resource = resource;
-    }
-
-    @Override
-    public void close() {
-      if (resource == null) {
-        return;
-      }
-      final ArrayList<PairGuard> items = resource;
-      resource = null;
-      int size = items.size();
-      PairGuard lastAlive = null;
-      int i = 0;
-      while (i < size) {
-        final PairGuard item = items.get(i);
-        if (item.getSecond() == null) {
-          // Assuming that java.util.ArrayList#remove(int index) provides no-throw guarantee
-          // if index is correct, because ArrayList#remove(int) is implemented using
-          // java.lang.System#arraycopy and System#arraycopy is assumed to provide
-          // no-throw guarantee like any reference copying / assignment
-          items.remove(i);
-          --size;
-        } else {
-          item.setFirst(lastAlive);
-          lastAlive = item;
-          ++i;
-        }
-      }
-    }
-  }
-
   private final AddGuard addGuard = new AddGuard();
-  private final CleanGuard cleanGuard = new CleanGuard();
-  private ArrayList<PairGuard> items;
+  private ArrayList<AutoCloseable> items;
 
   /**
-   * Provides strong exception safety. If throws exception then {@code resource} is closed by
-   * invocation of its {@link AutoCloseable#close()} method. If this method throws exception then it
-   * is returned as suppressed exception of initial exception.
+   * Provides strong exception safety. If throws exception when failed to add new item then {@code
+   * resource} is closed by invocation of its {@link AutoCloseable#close()} method. If this method
+   * throws exception then it is returned as suppressed exception of initial exception. If {@link
+   * Throwable#addSuppressed(Throwable)} throws exception ({@link RuntimeException} and derived or
+   * {@link Error} and derived) then that exception is thrown.
    */
   public void add(final AutoCloseable resource) {
     try (final AddGuard guard = addGuard) {
@@ -94,13 +55,7 @@ public class NestedGuard implements AutoCloseable {
       if (items == null) {
         items = new ArrayList<>();
       }
-      final PairGuard newItem = new PairGuard();
-      if (!items.isEmpty()) {
-        final PairGuard lastItem = items.get(items.size() - 1);
-        newItem.setFirst(lastItem);
-      }
-      newItem.setSecond(resource);
-      addItem(items, newItem);
+      addItem(items, resource);
       guard.set(null);
     } catch (final RuntimeException e) {
       throw e;
@@ -135,7 +90,7 @@ public class NestedGuard implements AutoCloseable {
    */
   public void set(final int index, final AutoCloseable resource) {
     ensureItemsNotNull(index);
-    items.get(index).setSecond(resource);
+    items.set(index, resource);
   }
 
   /**
@@ -152,7 +107,7 @@ public class NestedGuard implements AutoCloseable {
    */
   public AutoCloseable get(final int index) {
     ensureItemsNotNull(index);
-    return items.get(index).getSecond();
+    return items.get(index);
   }
 
   /**
@@ -179,9 +134,8 @@ public class NestedGuard implements AutoCloseable {
    */
   public AutoCloseable release(final int index) {
     ensureItemsNotNull(index);
-    final PairGuard item = items.get(index);
-    final AutoCloseable tmp = item.getSecond();
-    item.setSecond(null);
+    final AutoCloseable tmp = items.get(index);
+    items.set(index, null);
     return tmp;
   }
 
@@ -200,21 +154,16 @@ public class NestedGuard implements AutoCloseable {
    */
   public AutoCloseable remove(final int index) {
     ensureItemsNotNull(index);
-    final PairGuard removedItem = items.get(index);
+    final AutoCloseable removedItem = items.get(index);
     final int size = items.size();
     if (size == 1) {
       items = null;
-      return removedItem.getSecond();
-    }
-    // If not last item, then exclude removed item from chain
-    if (index < size - 1) {
-      final PairGuard nextItem = items.get(index + 1);
-      nextItem.setFirst(removedItem.getFirst());
+      return removedItem;
     }
     // Assuming that java.util.ArrayList#remove(int index) provides no-throw guarantee
     // if index is correct
     items.remove(index);
-    return removedItem.getSecond();
+    return removedItem;
   }
 
   /**
@@ -223,7 +172,7 @@ public class NestedGuard implements AutoCloseable {
    * @param other another instance to swap with.
    */
   public void swap(final NestedGuard other) {
-    final ArrayList<PairGuard> thisItems = items;
+    final ArrayList<AutoCloseable> thisItems = items;
     items = other.items;
     other.items = thisItems;
   }
@@ -246,17 +195,9 @@ public class NestedGuard implements AutoCloseable {
    * AutoCloseable#close()} method of multiple guarded resources throws exception (exception 1 is
    * thrown, then exception 2 is thrown, then exception n is thrown) then exceptions are "nested" as
    * suppressed - refer to {@link Throwable#getSuppressed()} method. Nesting of multiple exceptions
-   * is done in a different way comparing to "try-with-resources" statement.<br/> Nesting of
-   * exceptions by "try-with-resources" statement:<br/>
+   * is done in the same way as "try-with-resources" statement does:
    * <pre>
    * exception 1, {@link Throwable#getSuppressed()} returns { exception 2, exception 3, ..., exception n}
-   * </pre>
-   * Nesting of exceptions by this method:
-   * <pre>
-   * exception 1, {@link Throwable#getSuppressed()} returns { exception 2 }
-   * exception 2, {@link Throwable#getSuppressed()} returns { exception 3 }
-   * ...
-   * exception n-1, {@link Throwable#getSuppressed()} returns { exception n }
    * </pre>
    *
    * @throws Exception if {@link AutoCloseable#close()} method of one of the guarded resources
@@ -275,13 +216,39 @@ public class NestedGuard implements AutoCloseable {
       items = null;
       return;
     }
-    try (final CleanGuard guard = cleanGuard) {
-      guard.set(items);
-      final PairGuard lastItem = items.get(items.size() - 1);
-      lastItem.close();
-      guard.set(null);
-      items = null;
+    Throwable throwable = null;
+    final int size = items.size();
+    for (int i = size - 1; i >= 0; --i) {
+      final AutoCloseable item = items.get(i);
+      try {
+        if (item != null) {
+          item.close();
+        }
+        // Assuming that java.util.ArrayList#remove(int index) provides no-throw guarantee
+        // if index is correct, because ArrayList#remove(int) is implemented using
+        // java.lang.System#arraycopy and System#arraycopy is assumed to provide
+        // no-throw guarantee like any reference copying / assignment
+        items.remove(i);
+      } catch (final Throwable t) {
+        if (throwable == null) {
+          throwable = t;
+        } else {
+          try {
+            throwable.addSuppressed(t);
+          } catch (final Throwable newThrowable) {
+            throwable = newThrowable;
+          }
+        }
+      }
     }
+    if (throwable == null) {
+      items = null;
+      return;
+    }
+    if (throwable instanceof Error) {
+      throw (Error) throwable;
+    }
+    throw (Exception) throwable;
   }
 
   /**
@@ -290,7 +257,7 @@ public class NestedGuard implements AutoCloseable {
    * @param items list to add new item to the end.
    * @param item new item to be added at the end of given {@code items} list.
    */
-  protected void addItem(final List<PairGuard> items, final PairGuard item) {
+  protected void addItem(final List<AutoCloseable> items, final AutoCloseable item) {
     items.add(item);
   }
 
