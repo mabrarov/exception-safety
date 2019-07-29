@@ -32,8 +32,8 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
-import org.mockito.Matchers;
 
 public class NestedGuardTest {
 
@@ -539,8 +539,8 @@ public class NestedGuardTest {
   @Test
   public void test_closeEmptyItems_doesNotThrowException() throws Exception {
     final NestedGuard guard = spy(new NestedGuard());
-    doNothing().when(guard)
-        .addItem(Matchers.<List<AutoCloseable>>any(), Matchers.<AutoCloseable>any());
+    doNothing().when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
     final AutoCloseable resource = mock(AutoCloseable.class);
     guard.add(resource);
     assertThat(guard.size(), is(0));
@@ -553,8 +553,8 @@ public class NestedGuardTest {
   public void test_addThrowsException_resourceIsClosed() throws Exception {
     final TestRuntimeException addException = new TestRuntimeException();
     final NestedGuard guard = spy(new NestedGuard());
-    doThrow(addException).when(guard)
-        .addItem(Matchers.<List<AutoCloseable>>any(), Matchers.<AutoCloseable>any());
+    doThrow(addException).when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
     final AutoCloseable resource = mock(AutoCloseable.class);
     try {
       guard.add(resource);
@@ -570,8 +570,8 @@ public class NestedGuardTest {
   public void test_addThrowsError_resourceIsClosed() throws Exception {
     final TestError addError = new TestError();
     final NestedGuard guard = spy(new NestedGuard());
-    doThrow(addError).when(guard)
-        .addItem(Matchers.<List<AutoCloseable>>any(), Matchers.<AutoCloseable>any());
+    doThrow(addError).when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
     final AutoCloseable resource = mock(AutoCloseable.class);
     try {
       guard.add(resource);
@@ -589,8 +589,8 @@ public class NestedGuardTest {
     final TestRuntimeException addException = new TestRuntimeException();
     final TestException closeException = new TestException();
     final NestedGuard guard = spy(new NestedGuard());
-    doThrow(addException).when(guard)
-        .addItem(Matchers.<List<AutoCloseable>>any(), Matchers.<AutoCloseable>any());
+    doThrow(addException).when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
     final AutoCloseable resource = mock(AutoCloseable.class);
     doThrow(closeException).when(resource).close();
     try {
@@ -612,8 +612,8 @@ public class NestedGuardTest {
     final TestError addError = new TestError(1);
     final TestError closeError = new TestError(2);
     final NestedGuard guard = spy(new NestedGuard());
-    doThrow(addError).when(guard)
-        .addItem(Matchers.<List<AutoCloseable>>any(), Matchers.<AutoCloseable>any());
+    doThrow(addError).when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
     final AutoCloseable resource = mock(AutoCloseable.class);
     doThrow(closeError).when(resource).close();
     try {
@@ -634,11 +634,11 @@ public class NestedGuardTest {
       throws Exception {
     final TestRuntimeException addSuppressedException = new TestRuntimeException();
     final TestError addError = spy(new TestError(1));
-    doThrow(addSuppressedException).when(addError).addSuppressed(Matchers.<Throwable>any());
+    doThrow(addSuppressedException).when(addError).addSuppressed(ArgumentMatchers.<Throwable>any());
     final TestError closeError = new TestError(2);
     final NestedGuard guard = spy(new NestedGuard());
-    doThrow(addError).when(guard)
-        .addItem(Matchers.<List<AutoCloseable>>any(), Matchers.<AutoCloseable>any());
+    doThrow(addError).when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
     final AutoCloseable resource = mock(AutoCloseable.class);
     doThrow(closeError).when(resource).close();
     try {
@@ -656,11 +656,11 @@ public class NestedGuardTest {
       throws Exception {
     final TestError addSuppressedError = new TestError(3);
     final TestError addError = spy(new TestError(1));
-    doThrow(addSuppressedError).when(addError).addSuppressed(Matchers.<Throwable>any());
+    doThrow(addSuppressedError).when(addError).addSuppressed(ArgumentMatchers.<Throwable>any());
     final TestError closeError = new TestError(2);
     final NestedGuard guard = spy(new NestedGuard());
-    doThrow(addError).when(guard)
-        .addItem(Matchers.<List<AutoCloseable>>any(), Matchers.<AutoCloseable>any());
+    doThrow(addError).when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
     final AutoCloseable resource = mock(AutoCloseable.class);
     doThrow(closeError).when(resource).close();
     try {
