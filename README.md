@@ -272,3 +272,67 @@ public class Foo {
   }
 }
 ```
+
+### Example 4
+
+Example #2 simplified by usage of `NestedGuard` class.
+
+```java
+package bar;
+
+import org.mabrarov.exceptionsafety.Guard;
+
+public class Foo implements AutoCloseable {
+
+  private static AutoCloseable createResource1() throws Exception {
+    // ...
+  }
+
+  private static AutoCloseable createResource2() throws Exception {
+    // ...
+  }
+
+  private static AutoCloseable createResource3() throws Exception {
+    // ...
+  }
+
+  private static void doSomeInitialization() throws Exception {
+    // ...
+  }
+
+  // Use NestedGuard to simplify closing of multiples instances of AutoCloseable.
+  private NestedGuard guard = new NestedGuard();
+
+  // Provides no-leak guarantee
+  public Foo() throws Exception {
+    try (NestedGuard localGuard = new NestedGuard()) {
+      AutoCloseable resource1 = createResource1();
+      // If localGuard.add fails (for example due to OOM) then it closes resource1
+      // before throwing exception, so resource1 doesn't leak.
+      // If resource1.close() throws exception too, then that exception is nested as suppressed
+      // by original exception thrown by localGuard.add method.
+      localGuard.add(resource1);
+
+      AutoCloseable resource2 = createResource2();
+      localGuard.add(resource2);
+
+      AutoCloseable resource3 = createResource3();
+      localGuard.add(resource3);
+
+      doSomeInitialzation();
+
+      // No more initialization code which my throw exception,
+      // so it's safe to release localGuard.
+      
+      // Below method provides no-throw guarantee.
+      // Move resources from local scope of current method to the member of Foo instance.
+      guard.swap(localGuard);
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    guard.close();
+  }
+}
+```
