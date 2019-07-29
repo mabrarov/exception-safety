@@ -337,7 +337,7 @@ public class Foo implements AutoCloseable {
     // then that resource remains in guard so subsequent call of Foo#close method still 
     // closes that resource.
     // If resource is closed successfully (without exception) then it is removed from guard so that
-    // subsequent calls Foo#close method don't impact that resource (as well as resource may be
+    // subsequent calls of Foo#close method don't impact that resource (as well as resource may be
     // picked by GC).
     guard.close();
   }
