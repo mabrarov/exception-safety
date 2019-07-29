@@ -50,7 +50,8 @@ public class NestedGuard implements AutoCloseable {
    * {@link Error} and derived) then that exception is thrown.<br/> If completes successfully
    * (without exception) then increments {@link NestedGuard#size()}.
    *
-   * @param resource instance of {@link AutoCloseable} to be guarded, may be {@code null}
+   * @param resource instance of {@link AutoCloseable} to be guarded, may be {@code null}. If {@code
+   * null} then {@link NestedGuard#size()} is still incremented.
    */
   public void add(final AutoCloseable resource) {
     try (final AddGuard guard = addGuard) {

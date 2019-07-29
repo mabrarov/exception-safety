@@ -22,6 +22,9 @@ public class PairGuard implements AutoCloseable {
 
   /**
    * Provides no-throw guarantee.
+   *
+   * @param first instance of {@link AutoCloseable} to guard. {@code null} is allowed and means no
+   * resource is guarded (equivalent to {@link PairGuard#releaseFirst()}).
    */
   public void setFirst(final AutoCloseable first) {
     this.firstGuard.set(first);
@@ -29,6 +32,9 @@ public class PairGuard implements AutoCloseable {
 
   /**
    * Provides no-throw guarantee.
+   *
+   * @param second instance of {@link AutoCloseable} to guard. {@code null} is allowed and means no
+   * resource is guarded (equivalent to {@link PairGuard#releaseSecond()}).
    */
   public void setSecond(final AutoCloseable second) {
     this.second = second;
