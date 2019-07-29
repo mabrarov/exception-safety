@@ -47,7 +47,10 @@ public class NestedGuard implements AutoCloseable {
    * resource} is closed by invocation of its {@link AutoCloseable#close()} method. If this method
    * throws exception then it is returned as suppressed exception of initial exception. If {@link
    * Throwable#addSuppressed(Throwable)} throws exception ({@link RuntimeException} and derived or
-   * {@link Error} and derived) then that exception is thrown.
+   * {@link Error} and derived) then that exception is thrown.<br/> If completes successfully
+   * (without exception) then increments {@link NestedGuard#size()}.
+   *
+   * @param resource instance of {@link AutoCloseable} to be guarded, may be {@code null}
    */
   public void add(final AutoCloseable resource) {
     try (final AddGuard guard = addGuard) {

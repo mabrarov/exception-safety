@@ -550,6 +550,31 @@ public class NestedGuardTest {
   }
 
   @Test
+  public void test_addNull_doesNotThrowException() throws Exception {
+    final NestedGuard guard = new NestedGuard();
+    guard.add(null);
+
+    assertThat(guard.size(), is(1));
+    guard.close();
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test
+  public void test_addNullThrowsException_addExceptionIsThrown() throws Exception {
+    final TestRuntimeException addException = new TestRuntimeException();
+    final NestedGuard guard = spy(new NestedGuard());
+    doThrow(addException).when(guard).addItem(ArgumentMatchers.<List<AutoCloseable>>any(),
+        ArgumentMatchers.<AutoCloseable>any());
+    try {
+      guard.add(null);
+      fail("Expected TestRuntimeException");
+    } catch (final TestRuntimeException e) {
+      assertThat(e, is(sameInstance(addException)));
+    }
+    assertThat(guard.size(), is(0));
+  }
+
+  @Test
   public void test_addThrowsException_resourceIsClosed() throws Exception {
     final TestRuntimeException addException = new TestRuntimeException();
     final NestedGuard guard = spy(new NestedGuard());
