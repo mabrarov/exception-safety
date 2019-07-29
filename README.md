@@ -332,6 +332,13 @@ public class Foo implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
+    // Closes resource3, then resource2, then resource1.
+    // If some resource throws exception when its AutoCloseable#close method is called, 
+    // then that resource remains in guard so subsequent call of Foo#close method still 
+    // closes that resource.
+    // If resource is closed successfully (without exception) then it is removed from guard so that
+    // subsequent calls Foo#close method don't impact that resource (as well as resource may be
+    // picked by GC).
     guard.close();
   }
 }
