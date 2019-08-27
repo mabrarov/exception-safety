@@ -32,10 +32,10 @@ matrix:
     - dist: bionic
       env: COVERAGE_BUILD=1
       jdk: openjdk11
+      python: 3.6
       addons:
         apt:
           packages:
-            - "python3"
             - "python3-pip"
     # OpenJDK 7
     - dist: trusty
