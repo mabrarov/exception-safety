@@ -66,5 +66,5 @@ script:
 
 after_success:
   - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
-      travis_retry codecov --required --token "${CODECOV_TOKEN}" --root "${TRAVIS_BUILD_DIR}";
+      travis_retry codecov --required --token "${CODECOV_TOKEN}" --root "${TRAVIS_BUILD_DIR}" -X gcov;
     fi
