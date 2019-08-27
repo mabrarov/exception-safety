@@ -1,6 +1,9 @@
 # Exception Safety
 
-[![Release](https://img.shields.io/github/release/mabrarov/exception-safety.svg)](https://github.com/mabrarov/exception-safety/releases/latest) [![License](https://img.shields.io/github/license/mabrarov/exception-safety)](https://github.com/mabrarov/exception-safety/tree/master/LICENSE) [![Travis CI build status](https://travis-ci.org/mabrarov/exception-safety.svg?branch=master)](https://travis-ci.org/mabrarov/exception-safety) [![Linux code coverage status](https://codecov.io/gh/mabrarov/exception-safety/branch/master/graph/badge.svg)](https://codecov.io/gh/mabrarov/exception-safety/branch/master)
+[![Release](https://img.shields.io/github/release/mabrarov/exception-safety.svg)](https://github.com/mabrarov/exception-safety/releases/latest) 
+[![License](https://img.shields.io/github/license/mabrarov/exception-safety)](https://github.com/mabrarov/exception-safety/tree/master/LICENSE)
+[![Travis CI build status](https://travis-ci.org/mabrarov/exception-safety.svg?branch=master)](https://travis-ci.org/mabrarov/exception-safety)
+[![Code coverage status](https://codecov.io/gh/mabrarov/exception-safety/branch/master/graph/badge.svg)](https://codecov.io/gh/mabrarov/exception-safety/branch/master)
 
 Java library to support [exception safety](https://en.wikipedia.org/wiki/Exception_safety) (from [Wikipedia](https://wikipedia.org)):
 
