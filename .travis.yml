@@ -32,6 +32,11 @@ matrix:
     - dist: bionic
       env: COVERAGE_BUILD=1
       jdk: openjdk11
+      addons:
+        apt:
+          packages:
+            - "python3"
+            - "python3-pip"
     # OpenJDK 7
     - dist: trusty
       jdk: openjdk7
@@ -53,7 +58,7 @@ matrix:
 
 install:
   - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
-      sudo -H pip install --disable-pip-version-check --retries "${PIP_RETRY}" codecov=="${CODECOV_VERSION}";
+      sudo -H pip3 install --disable-pip-version-check --retries "${PIP_RETRY}" codecov=="${CODECOV_VERSION}";
     fi
 
 script:
