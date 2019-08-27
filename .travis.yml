@@ -23,10 +23,8 @@ cache:
 env:
   global:
     - COVERAGE_BUILD: 0
-    - CURL_CONNECT_TIMEOUT: 300
-    - CURL_MAX_TIME: 1800
-    - CURL_RETRY: 10
-    - CURL_RETRY_DELAY: 10
+    - PIP_RETRY: 10
+    - CODECOV_VERSION: 2.0.15
 
 matrix:
   include:
@@ -53,20 +51,23 @@ matrix:
     - dist: bionic
       jdk: openjdk10
 
-install: skip
+install:
+  - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
+      sudo pip install \
+        --disable-pip-version-check \
+        --retries "${PIP_RETRY}" \
+        codecov=="${CODECOV_VERSION}";
+    fi
 
 script:
-  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+  - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
       export MAVEN_PROFILES=" -P jacoco";
     else
       export MAVEN_PROFILES="";
     fi
-  - cd ${TRAVIS_BUILD_DIR}
-  - mvn --batch-mode clean package${MAVEN_PROFILES}
+  - mvn -f "${TRAVIS_BUILD_DIR}/pom.xml" --batch-mode clean package${MAVEN_PROFILES}
 
 after_success:
-  - cd ${TRAVIS_BUILD_DIR}
-  - if [ "${COVERAGE_BUILD}" != 0 ]; then
-      echo "Sending coverage data to Codecov" &&
-      bash <(curl --connect-timeout ${CURL_CONNECT_TIMEOUT} --max-time ${CURL_MAX_TIME} --retry ${CURL_RETRY} --retry-delay ${CURL_RETRY_DELAY} -s https://codecov.io/bash) -Z;
+  - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
+      travis_retry codecov --required --token "${CODECOV_TOKEN}" --root "${TRAVIS_BUILD_DIR}";
     fi
