@@ -219,7 +219,7 @@ public class NestedGuard implements AutoCloseable {
       items = null;
       return;
     }
-    Throwable throwable = null;
+    Throwable currentException = null;
     final int size = items.size();
     for (int i = size - 1; i >= 0; --i) {
       final AutoCloseable item = items.get(i);
@@ -232,26 +232,26 @@ public class NestedGuard implements AutoCloseable {
         // java.lang.System#arraycopy and System#arraycopy is assumed to provide
         // no-throw guarantee like any reference copying / assignment
         items.remove(i);
-      } catch (final Throwable t) {
-        if (throwable == null) {
-          throwable = t;
+      } catch (final Throwable closeException) {
+        if (currentException == null) {
+          currentException = closeException;
         } else {
           try {
-            throwable.addSuppressed(t);
-          } catch (final Throwable newThrowable) {
-            throwable = newThrowable;
+            currentException.addSuppressed(closeException);
+          } catch (final Throwable suppressionException) {
+            currentException = suppressionException;
           }
         }
       }
     }
-    if (throwable == null) {
+    if (currentException == null) {
       items = null;
       return;
     }
-    if (throwable instanceof Error) {
-      throw (Error) throwable;
+    if (currentException instanceof Error) {
+      throw (Error) currentException;
     }
-    throw (Exception) throwable;
+    throw (Exception) currentException;
   }
 
   /**
