@@ -47,14 +47,19 @@ as building blocks:
 ### Requirements
 
 1. JDK 1.7+
-1. [Apache Maven](https://maven.apache.org) 3.0.0+
 
 ## Steps
 
-Simply build with Maven as any regular maven project:
+Build with [Maven Wrapper](https://github.com/takari/maven-wrapper):
 
 ```bash
-mvn clean package
+./mvnw clean package
+```
+
+or on Windows:
+
+```cmd
+mvnw.cmd clean package
 ```
 
 ## Usage
