@@ -4,6 +4,7 @@ platform:
   - x64
 
 environment:
+  MAVEN_WRAPPER: 0
   COVERAGE_BUILD: 0
   PIP_RETRY: 10
   CODECOV_VERSION: 2.0.15
@@ -11,6 +12,8 @@ environment:
   matrix:
     - JDK_VERSION: 7
       COVERAGE_BUILD: 1
+    - JDK_VERSION: 11
+      MAVEN_WRAPPER: 1
     - JDK_VERSION: 8
     - JDK_VERSION: 10
     - JDK_VERSION: 11
