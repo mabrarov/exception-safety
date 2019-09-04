@@ -1,30 +1,21 @@
-#
-# Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 language: java
 
 cache:
   directories:
-    - ${HOME}/.m2/repository/
+    - ${HOME}/.m2/repository
+    - ${HOME}/downloads
 
 env:
   global:
     - COVERAGE_BUILD: 0
-    - PIP_RETRY: 10
     - CODECOV_VERSION: 2.0.15
+    - PIP_RETRY: 10
+    - CURL_CONNECT_TIMEOUT: 300
+    - CURL_MAX_TIME: 1800
+    - CURL_RETRY: 10
+    - CURL_RETRY_DELAY: 10
+    - DEPENDENCIES_HOME: ${HOME}/dependencies
+    - DOWNLOADS_HOME: ${HOME}/downloads
 
 matrix:
   include:
@@ -48,27 +39,33 @@ matrix:
     # Oracle JDK 9
     - dist: trusty
       jdk: oraclejdk9
-    # Oracle JDK 11
-    - dist: trusty
-      jdk: oraclejdk11
     # OpenJDK 10
     - dist: bionic
       jdk: openjdk10
+    # Oracle JDK 11
+    - dist: trusty
+      jdk: oraclejdk11
+    # Amazon Corretto 8
+    - dist: bionic
+      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=8.222.10.1
+    # Amazon Corretto 11
+    - dist: bionic
+      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=11.0.4.11.1
+    # Azul Systems Zulu 8
+    - dist: bionic
+      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=8.0.222
+    # Azul Systems Zulu 11
+    - dist: bionic
+      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=11.0.4
+    # AdoptOpenJDK 8
+    - dist: bionic
+      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=8u222b10
+    # AdoptOpenJDK 11
+    - dist: bionic
+      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=11.0.4_11
 
-install:
-  - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
-      pip3 install --user --disable-pip-version-check --retries "${PIP_RETRY}" codecov=="${CODECOV_VERSION}";
-    fi
+install: source ./scripts/travis/install.sh
 
-script:
-  - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
-      export MAVEN_PROFILES=" -P jacoco";
-    else
-      export MAVEN_PROFILES="";
-    fi
-  - mvn -f "${TRAVIS_BUILD_DIR}/pom.xml" --batch-mode clean package${MAVEN_PROFILES}
+script: source ./scripts/travis/build.sh
 
-after_success:
-  - if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
-      travis_retry codecov --required --token "${CODECOV_TOKEN}" --root "${TRAVIS_BUILD_DIR}" -X gcov;
-    fi
+after_success: source ./scripts/travis/codecov.sh
