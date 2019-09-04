@@ -14,6 +14,7 @@ environment:
       COVERAGE_BUILD: 1
     - JDK_VERSION: 11
       MAVEN_WRAPPER: 1
+    - JDK_VERSION: 12
     - JDK_VERSION: 8
     - JDK_VERSION: 10
     - JDK_VERSION: 11
