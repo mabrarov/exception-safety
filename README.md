@@ -126,9 +126,9 @@ public class Foo implements AutoCloseable {
       resource3 = createResource3();
       guard3.set(resource3);
 
-      // If Foo#doSomeInitialzation() method throws exception 
+      // If Foo#doSomeInitialization() method throws exception 
       // then resource1, resource2 and resource3 are guaranteed closed.
-      doSomeInitialzation();
+      doSomeInitialization();
 
       // No more initialization code which my throw exception
       // so it's safe to release all guards.
@@ -206,7 +206,7 @@ public class Foo implements AutoCloseable {
       AutoCloseable resource3 = createResource3();
       guard3.set(resource3);
 
-      doSomeInitialzation();
+      doSomeInitialization();
 
       // No more initialization code which my throw exception,
       // so it's safe to release all guards.
@@ -271,7 +271,8 @@ public class Foo {
  
       // Below method provides no-throw guarantee.
       // Guard#close() does nothing when below statement completes.
-      return guard.release();
+      guard.release();
+      return resource;
     }
   }
 
@@ -328,7 +329,7 @@ public class Foo implements AutoCloseable {
       AutoCloseable resource3 = createResource3();
       localGuard.add(resource3);
 
-      doSomeInitialzation();
+      doSomeInitialization();
 
       // No more initialization code which my throw exception,
       // so it's safe to release localGuard.
