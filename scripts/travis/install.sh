@@ -19,26 +19,14 @@ if [[ -n "${CUSTOM_JDK+x}" ]] && [[ -n "${CUSTOM_JDK_VERSION+x}" ]]; then
     "amazon-corretto")
       custom_jdk_dist_base_name="amazon-corretto-${CUSTOM_JDK_VERSION}-linux-x64"
       custom_jdk_dist_name="${custom_jdk_dist_base_name}.tar.gz"
-      custom_jdk_url="https://d3pxv6yz143wms.cloudfront.net/${CUSTOM_JDK_VERSION}/${custom_jdk_dist_name}"
+      custom_jdk_url="https://corretto.aws/downloads/resources/${CUSTOM_JDK_VERSION}/${custom_jdk_dist_name}"
       custom_jdk_dir_name="${custom_jdk_dist_base_name}"
       ;;
     "azul-zulu")
       custom_jdk_version_major="$(echo "${CUSTOM_JDK_VERSION}" | sed -r 's/([0-9]+)\..*/\1/;t;d')"
-      case "${custom_jdk_version_major}" in
-        "8")
-          custom_jdk_dist_base_name="zulu${custom_jdk_version_major}.40.0.25-ca-jdk${CUSTOM_JDK_VERSION}-linux_x64"
-          custom_jdk_dist_name="${custom_jdk_dist_base_name}.tar.gz"
-          custom_jdk_url="https://cdn.azul.com/zulu/bin/${custom_jdk_dist_name}"
-          ;;
-        "11")
-          custom_jdk_dist_base_name="zulu${custom_jdk_version_major}.33.15-ca-jdk${CUSTOM_JDK_VERSION}-linux_x64"
-          custom_jdk_dist_name="${custom_jdk_dist_base_name}.tar.gz"
-          custom_jdk_url="https://cdn.azul.com/zulu/bin/${custom_jdk_dist_name}"
-          ;;
-        *)
-          echo "Unsupported version of custom JDK: ${CUSTOM_JDK} ${CUSTOM_JDK_VERSION}"
-          exit 1
-      esac
+      custom_jdk_dist_base_name="zulu${CUSTOM_JDK_VERSION}-linux_x64"
+      custom_jdk_dist_name="${custom_jdk_dist_base_name}.tar.gz"
+      custom_jdk_url="https://cdn.azul.com/zulu/bin/${custom_jdk_dist_name}"
       custom_jdk_dir_name="${custom_jdk_dist_base_name}"
       ;;
     "AdoptOpenJDK")

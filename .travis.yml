@@ -55,22 +55,22 @@ matrix:
       jdk: oraclejdk11
     # Amazon Corretto 8
     - dist: bionic
-      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=8.222.10.1
+      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=8.265.01.1
     # Amazon Corretto 11
     - dist: bionic
-      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=11.0.4.11.1
+      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=11.0.8.10.1
     # Azul Systems Zulu 8
     - dist: bionic
-      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=8.0.222
+      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=8.48.0.53-ca-jdk8.0.265
     # Azul Systems Zulu 11
     - dist: bionic
-      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=11.0.4
+      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=11.41.23-ca-jdk11.0.8
     # AdoptOpenJDK 8
     - dist: bionic
-      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=8u222b10
+      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=8u265b01
     # AdoptOpenJDK 11
     - dist: bionic
-      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=11.0.4_11
+      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=11.0.8_10
 
 install: source ./scripts/travis/install.sh
 
