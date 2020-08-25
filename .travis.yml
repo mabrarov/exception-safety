@@ -1,73 +1,93 @@
-language: java
+language: 'java'
 
 cache:
   directories:
-    - ${HOME}/.m2/repository
-    - ${HOME}/downloads
+    - '${HOME}/.m2/repository'
+    - '${HOME}/downloads'
+
+before_cache:
+  - 'mvn -q -fn org.codehaus.mojo:build-helper-maven-plugin:3.2.0:remove-project-artifact -Dbuildhelper.removeAll=false -Dbuildhelper.failOnError=false'
 
 env:
   global:
-    - MAVEN_WRAPPER: 0
-    - COVERAGE_BUILD: 0
-    - CODECOV_VERSION: 2.0.15
-    - PIP_RETRY: 10
-    - CURL_CONNECT_TIMEOUT: 300
-    - CURL_MAX_TIME: 1800
-    - CURL_RETRY: 10
-    - CURL_RETRY_DELAY: 10
-    - DEPENDENCIES_HOME: ${HOME}/dependencies
-    - DOWNLOADS_HOME: ${HOME}/downloads
+    - MAVEN_WRAPPER: '0'
+    - COVERAGE_BUILD: '0'
+    - CODECOV_VERSION: '2.1.7'
+    - PIP_RETRY: '10'
+    - CURL_CONNECT_TIMEOUT: '300'
+    - CURL_MAX_TIME: '1800'
+    - CURL_RETRY: '10'
+    - CURL_RETRY_DELAY: '10'
+    - DEPENDENCIES_HOME: '${HOME}/dependencies'
+    - DOWNLOADS_HOME: '${HOME}/downloads'
 
 matrix:
   include:
     # OpenJDK 11
-    - dist: bionic
-      env: COVERAGE_BUILD=1
-      jdk: openjdk11
+    - dist: 'bionic'
+      jdk: 'openjdk11'
+      env:
+        - COVERAGE_BUILD: '1'
+        - COPILOT_BUILD: '1'
       addons:
         apt:
           packages:
-            - "python3-pip"
+            - 'python3-pip'
     # OpenJDK 11 with Maven Wrapper
-    - dist: bionic
-      env: MAVEN_WRAPPER=1
-      jdk: openjdk11
+    - dist: 'bionic'
+      jdk: 'openjdk11'
+      env:
+        - MAVEN_WRAPPER: '1'
     # OpenJDK 14
-    - dist: bionic
-      jdk: openjdk14
+    - dist: 'bionic'
+      jdk: 'openjdk14'
     # OpenJDK 7
-    - dist: trusty
-      jdk: openjdk7
+    - dist: 'trusty'
+      jdk: 'openjdk7'
+      env:
+        - MAVEN_BUILD_OPTIONS: '"-Dmockito.version=2.28.2"'
     # OpenJDK 8
-    - dist: trusty
-      jdk: openjdk8
+    - dist: 'trusty'
+      jdk: 'openjdk8'
     # Oracle JDK 8
-    - dist: trusty
-      jdk: oraclejdk8
+    - dist: 'trusty'
+      jdk: 'oraclejdk8'
     # Oracle JDK 11
-    - dist: trusty
-      jdk: oraclejdk11
+    - dist: 'trusty'
+      jdk: 'oraclejdk11'
     # Amazon Corretto 8
-    - dist: bionic
-      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=8.265.01.1
+    - dist: 'bionic'
+      env:
+        - CUSTOM_JDK: 'amazon-corretto'
+        - CUSTOM_JDK_VERSION: '8.265.01.1'
     # Amazon Corretto 11
-    - dist: bionic
-      env: CUSTOM_JDK=amazon-corretto CUSTOM_JDK_VERSION=11.0.8.10.1
+    - dist: 'bionic'
+      env:
+        - CUSTOM_JDK: 'amazon-corretto'
+        - CUSTOM_JDK_VERSION: '11.0.8.10.1'
     # Azul Systems Zulu 8
-    - dist: bionic
-      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=8.48.0.53-ca-jdk8.0.265
+    - dist: 'bionic'
+      env:
+        - CUSTOM_JDK: 'azul-zulu'
+        - CUSTOM_JDK_VERSION: '8.48.0.53-ca-jdk8.0.265'
     # Azul Systems Zulu 11
-    - dist: bionic
-      env: CUSTOM_JDK=azul-zulu CUSTOM_JDK_VERSION=11.41.23-ca-jdk11.0.8
+    - dist: 'bionic'
+      env:
+        - CUSTOM_JDK: 'azul-zulu'
+        - CUSTOM_JDK_VERSION: '11.41.23-ca-jdk11.0.8'
     # AdoptOpenJDK 8
-    - dist: bionic
-      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=8u265b01
+    - dist: 'bionic'
+      env:
+        - CUSTOM_JDK: 'AdoptOpenJDK'
+        - CUSTOM_JDK_VERSION: '8u265b01'
     # AdoptOpenJDK 11
-    - dist: bionic
-      env: CUSTOM_JDK=AdoptOpenJDK CUSTOM_JDK_VERSION=11.0.8_10
+    - dist: 'bionic'
+      env:
+        - CUSTOM_JDK: 'AdoptOpenJDK'
+        - CUSTOM_JDK_VERSION: '11.0.8_10'
 
-install: source ./scripts/travis/install.sh
+install: 'source ./scripts/travis/install.sh'
 
-script: source ./scripts/travis/build.sh
+script: 'source ./scripts/travis/build.sh'
 
-after_success: source ./scripts/travis/codecov.sh
+after_success: 'source ./scripts/travis/codecov.sh'

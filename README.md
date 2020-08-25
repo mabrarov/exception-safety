@@ -5,6 +5,7 @@
 [![Travis CI build status](https://travis-ci.org/mabrarov/exception-safety.svg?branch=master)](https://travis-ci.org/mabrarov/exception-safety)
 [![AppVeyor CI build status](https://ci.appveyor.com/api/projects/status/t90klsr0etvfutqm/branch/master?svg=true)](https://ci.appveyor.com/project/mabrarov/exception-safety/branch/master)
 [![Code coverage status](https://codecov.io/gh/mabrarov/exception-safety/branch/master/graph/badge.svg)](https://codecov.io/gh/mabrarov/exception-safety/branch/master)
+[![Black Duck Security Risk](https://copilot.blackducksoftware.com/github/repos/mabrarov/exception-safety/branches/master/badge-risk.svg)](https://copilot.blackducksoftware.com/github/repos/mabrarov/exception-safety/branches/master)
 
 Java library to support [exception safety](https://en.wikipedia.org/wiki/Exception_safety) (from [Wikipedia](https://wikipedia.org)):
 

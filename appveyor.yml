@@ -1,40 +1,40 @@
-image: Visual Studio 2017
+image: 'Visual Studio 2017'
 
 platform:
-  - x64
+  - 'x64'
 
 environment:
-  MAVEN_WRAPPER: 0
-  COVERAGE_BUILD: 0
-  PIP_RETRY: 10
-  CODECOV_VERSION: 2.0.15
+  MAVEN_WRAPPER: '0'
+  COVERAGE_BUILD: '0'
+  PIP_RETRY: '10'
+  CODECOV_VERSION: '2.1.7'
 
   matrix:
-    - JDK_VERSION: 7
-      COVERAGE_BUILD: 1
-    - JDK_VERSION: 11
-      MAVEN_WRAPPER: 1
-    - JDK_VERSION: 12
-    - JDK_VERSION: 8
-    - JDK_VERSION: 10
-    - JDK_VERSION: 11
+    - JDK_VERSION: '7'
+      COVERAGE_BUILD: '1'
+      MAVEN_BUILD_OPTIONS: '"-Dmockito.version=2.28.2"'
+    - JDK_VERSION: '11'
+      MAVEN_WRAPPER: '1'
+    - JDK_VERSION: '14'
+    - JDK_VERSION: '8'
+    - JDK_VERSION: '11'
 
 cache:
-  - C:\Users\appveyor\.m2\repository -> appveyor.yml
+  - 'C:\Users\appveyor\.m2\repository -> appveyor.yml'
 
 install:
-  - ps: .\scripts\appveyor\install.ps1
+  - ps: '.\scripts\appveyor\install.ps1'
 
 build_script:
-  - ps: .\scripts\appveyor\build.ps1
+  - ps: '.\scripts\appveyor\build.ps1'
 
 after_build:
-  - ps: .\scripts\appveyor\codecov.ps1
+  - ps: '.\scripts\appveyor\codecov.ps1'
 
 test: false
 
 artifacts:
-  - path: target\*.jar
-    name: JAR
-  - path: target\*.exec
-    name: JaCoCo stats
+  - path: 'target\*.jar'
+    name: 'JAR'
+  - path: 'target\*.exec'
+    name: 'JaCoCo stats'
