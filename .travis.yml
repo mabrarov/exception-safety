@@ -32,9 +32,9 @@ matrix:
     - dist: bionic
       env: MAVEN_WRAPPER=1
       jdk: openjdk11
-    # OpenJDK 12
+    # OpenJDK 14
     - dist: bionic
-      jdk: openjdk12
+      jdk: openjdk14
     # OpenJDK 7
     - dist: trusty
       jdk: openjdk7
@@ -44,12 +44,6 @@ matrix:
     # Oracle JDK 8
     - dist: trusty
       jdk: oraclejdk8
-    # Oracle JDK 9
-    - dist: trusty
-      jdk: oraclejdk9
-    # OpenJDK 10
-    - dist: bionic
-      jdk: openjdk10
     # Oracle JDK 11
     - dist: trusty
       jdk: oraclejdk11
