@@ -108,30 +108,27 @@ public class Foo implements AutoCloseable {
     try (Guard guard1 = new Guard(); 
          Guard guard2 = new Guard(); 
          Guard guard3 = new Guard()) {
-      resource1 = createResource1();
-      // Guard resource at next step right after resource was created.
+      // Guard resource right after it was created.
       // Guard#set(AutoCloseable) method provides no-throw guarantee 
       // so there cannot be resource leak.
-      guard1.set(resource1);
+      resource1 = guard1.set(createResource1());
 
       // If Foo#createResource2() method throws exception 
       // then resource1 is closed by guard1 and "try-with-resource" statement.
       // If exception happens when closing resource1 then that exception is nested 
       // (suppressed - refer to Throwable#getSuppressed() method) by "try-with-resource" statement
       // so no exception is lost or overridden.
-      resource2 = createResource2();
-      guard2.set(resource2);
+      resource2 = guard2.set(createResource2());
 
       // If Foo#createResource3() method throws exception 
       // then resource1 and resource2 are guaranteed closed.
-      resource3 = createResource3();
-      guard3.set(resource3);
+      resource3 = guard3.set(createResource3());
 
       // If Foo#doSomeInitialization() method throws exception 
       // then resource1, resource2 and resource3 are guaranteed closed.
       doSomeInitialization();
 
-      // No more initialization code which my throw exception
+      // No more initialization code which may throw exception
       // so it's safe to release all guards.
       
       // Below methods provide no-throw guarantee.
@@ -198,18 +195,13 @@ public class Foo implements AutoCloseable {
     try (Guard guard1 = new Guard(); 
          Guard guard2 = new Guard(); 
          Guard guard3 = new Guard()) {
-      AutoCloseable resource1 = createResource1();
-      guard1.set(resource1);
-
-      AutoCloseable resource2 = createResource2();
-      guard2.set(resource2);
-
-      AutoCloseable resource3 = createResource3();
-      guard3.set(resource3);
+      AutoCloseable resource1 = guard1.set(createResource1());
+      AutoCloseable resource2 = guard2.set(createResource2());
+      AutoCloseable resource3 = guard3.set(createResource3());
 
       doSomeInitialization();
 
-      // No more initialization code which my throw exception,
+      // No more initialization code which may throw exception,
       // so it's safe to release all guards.
       
       // Below methods provide no-throw guarantee.
@@ -263,8 +255,7 @@ public class Foo {
   private Resource createResource() throws Exception {
     // Create guard before resource to avoid OOM (when creating guard) causing leak of resource.
     try (Guard guard = new Guard()) {
-      Resource resource = new Resource();
-      guard.set(resource);
+      Resource resource = guard.set(new Resource());
       
       // Some logic which may throw exception goes here.
       // If this call throws exception then resource is closed by guard.
@@ -317,22 +308,18 @@ public class Foo implements AutoCloseable {
   // Provides no-leak guarantee
   public Foo() throws Exception {
     try (NestedGuard localGuard = new NestedGuard()) {
-      AutoCloseable resource1 = createResource1();
-      // If localGuard.add fails (for example due to OOM) then it closes resource1
-      // before throwing exception, so resource1 doesn't leak.
-      // If resource1.close() throws exception too, then that exception is nested as suppressed
-      // by original exception thrown by localGuard.add method.
-      localGuard.add(resource1);
+      // If localGuard.add fails (for example due to OOM) then it closes resource created by
+      // createResource1() before throwing exception, so resource doesn't leak.
+      // If close() method of resource throws exception too, then that exception is nested as 
+      // suppressed by original exception thrown by localGuard.add method.
+      AutoCloseable resource1 = localGuard.add(createResource1());
 
-      AutoCloseable resource2 = createResource2();
-      localGuard.add(resource2);
-
-      AutoCloseable resource3 = createResource3();
-      localGuard.add(resource3);
+      AutoCloseable resource2 = localGuard.add(createResource2());
+      AutoCloseable resource3 = localGuard.add(createResource3());
 
       doSomeInitialization();
 
-      // No more initialization code which my throw exception,
+      // No more initialization code which may throw exception,
       // so it's safe to release localGuard.
       
       // Below method provides no-throw guarantee.

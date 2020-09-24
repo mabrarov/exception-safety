@@ -25,9 +25,11 @@ public class Guard implements AutoCloseable {
    *
    * @param resource instance of {@link AutoCloseable} to guard. {@code null} is allowed and means
    * no resource is guarded (equivalent to {@link Guard#release()}).
+   * @return instance of {@link AutoCloseable} passed as {@code resource} parameter.
    */
-  public void set(final AutoCloseable resource) {
+  public <T extends AutoCloseable> T set(final T resource) {
     this.resource = resource;
+    return resource;
   }
 
   /**

@@ -30,34 +30,36 @@ import org.junit.Test;
 public class GuardTest {
 
   @Test
-  public void test_getEmpty_returnsNull() {
-    final Guard guard = new Guard();
-    assertThat(guard.get(), is(nullValue()));
+  public void test_getEmpty_returnsNull() throws Exception {
+    try (final Guard guard = new Guard()) {
+      assertThat(guard.get(), is(nullValue()));
+    }
   }
 
   @Test
-  public void test_get_returnsResource() {
-    final Guard guard = new Guard();
-    final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
-    assertThat(guard.get(), is(sameInstance(resource)));
+  public void test_get_returnsResource() throws Exception {
+    try (final Guard guard = new Guard()) {
+      final AutoCloseable resource = mock(AutoCloseable.class);
+      final AutoCloseable guardedResource = guard.set(resource);
+      assertThat(guardedResource, is(sameInstance(resource)));
+      assertThat(guard.get(), is(sameInstance(resource)));
+    }
   }
 
   @Test
-  public void test_releaseEmpty_returnsNull() {
-    final Guard guard = new Guard();
-    assertThat(guard.release(), is(nullValue()));
+  public void test_releaseEmpty_returnsNull() throws Exception {
+    try (final Guard guard = new Guard()) {
+      assertThat(guard.release(), is(nullValue()));
+    }
   }
 
   @Test
   public void test_release_resourceIsNotClosed() throws Exception {
-    final Guard guard = new Guard();
-    final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
-
-    assertThat(guard.release(), is(sameInstance(resource)));
-    guard.close();
-
+    final AutoCloseable resource;
+    try (final Guard guard = new Guard()) {
+      resource = guard.set(mock(AutoCloseable.class));
+      assertThat(guard.release(), is(sameInstance(resource)));
+    }
     verify(resource, never()).close();
   }
 
@@ -67,9 +69,7 @@ public class GuardTest {
       final AutoCloseable resource = mock(AutoCloseable.class);
       guard.set(resource);
       assertThat(guard.get(), is(resource));
-
       guard.release();
-
       assertThat(guard.get(), is(nullValue()));
     }
   }
@@ -85,24 +85,21 @@ public class GuardTest {
 
   @Test
   public void test_close_resourceIsClosed() throws Exception {
-    final Guard guard = new Guard();
-    final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
-
-    guard.close();
-
+    final AutoCloseable resource;
+    try (final Guard guard = new Guard()) {
+      resource = guard.set(mock(AutoCloseable.class));
+    }
     verify(resource).close();
   }
 
   @Test
   public void test_closeTwice_resourceIsClosedOnce() throws Exception {
-    final Guard guard = new Guard();
-    final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
-
-    guard.close();
-    guard.close();
-
+    final AutoCloseable resource;
+    try (final Guard guard = new Guard()) {
+      resource = guard.set(mock(AutoCloseable.class));
+      //noinspection RedundantExplicitClose
+      guard.close();
+    }
     verify(resource).close();
   }
 
@@ -110,8 +107,8 @@ public class GuardTest {
   public void test_resourceCloseThrowsException_exceptionIsPropagated() throws Exception {
     try (final Guard guard = new Guard()) {
       final AutoCloseable resource = mock(AutoCloseable.class);
-      guard.set(resource);
       doThrow(new TestException()).when(resource).close();
+      guard.set(resource);
     }
   }
 
@@ -120,8 +117,8 @@ public class GuardTest {
       throws Exception {
     final Guard guard = new Guard();
     final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
     doThrow(new TestException()).when(resource).close();
+    guard.set(resource);
 
     closeSuppressingTestException(guard);
     closeSuppressingTestException(guard);
@@ -132,8 +129,7 @@ public class GuardTest {
   @Test
   public void test_swapNonEmptyWithEmpty_becomesEmpty() throws Exception {
     final Guard guard = new Guard();
-    final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
+    final AutoCloseable resource = guard.set(mock(AutoCloseable.class));
     assertThat(guard.get(), is(resource));
 
     final Guard empty = new Guard();
@@ -157,8 +153,7 @@ public class GuardTest {
     assertThat(empty.get(), is(nullValue()));
 
     final Guard guard = new Guard();
-    final AutoCloseable resource = mock(AutoCloseable.class);
-    guard.set(resource);
+    final AutoCloseable resource = guard.set(mock(AutoCloseable.class));
     assertThat(guard.get(), is(resource));
 
     empty.swap(guard);
@@ -176,13 +171,11 @@ public class GuardTest {
   @Test
   public void test_swap_resourcesAreSwapped() throws Exception {
     final Guard guard1 = new Guard();
-    final AutoCloseable resource1 = mock(AutoCloseable.class);
-    guard1.set(resource1);
+    final AutoCloseable resource1 = guard1.set(mock(AutoCloseable.class));
     assertThat(guard1.get(), is(resource1));
 
     final Guard guard2 = new Guard();
-    final AutoCloseable resource2 = mock(AutoCloseable.class);
-    guard2.set(resource2);
+    final AutoCloseable resource2 = guard2.set(mock(AutoCloseable.class));
     assertThat(guard2.get(), is(resource2));
 
     guard1.swap(guard2);
