@@ -25,9 +25,11 @@ public class PairGuard implements AutoCloseable {
    *
    * @param first instance of {@link AutoCloseable} to guard. {@code null} is allowed and means no
    * resource is guarded (equivalent to {@link PairGuard#releaseFirst()}).
+   * @return instance of {@link AutoCloseable} passed as {@code first} parameter.
    */
-  public void setFirst(final AutoCloseable first) {
+  public <T extends AutoCloseable> T setFirst(final T first) {
     this.firstGuard.set(first);
+    return first;
   }
 
   /**
@@ -35,9 +37,11 @@ public class PairGuard implements AutoCloseable {
    *
    * @param second instance of {@link AutoCloseable} to guard. {@code null} is allowed and means no
    * resource is guarded (equivalent to {@link PairGuard#releaseSecond()}).
+   * @return instance of {@link AutoCloseable} passed as {@code second} parameter.
    */
-  public void setSecond(final AutoCloseable second) {
+  public <T extends AutoCloseable> T setSecond(final T second) {
     this.second = second;
+    return second;
   }
 
   /**

@@ -52,8 +52,9 @@ public class NestedGuard implements AutoCloseable {
    *
    * @param resource instance of {@link AutoCloseable} to be guarded, may be {@code null}. If {@code
    * null} then {@link NestedGuard#size()} is still incremented.
+   * @return instance of {@link AutoCloseable} passed as {@code resource} parameter.
    */
-  public void add(final AutoCloseable resource) {
+  public <T extends AutoCloseable> T add(final T resource) {
     try (final AddGuard guard = addGuard) {
       guard.set(resource);
       if (items == null) {
@@ -61,6 +62,7 @@ public class NestedGuard implements AutoCloseable {
       }
       addItem(items, resource);
       guard.set(null);
+      return resource;
     } catch (final RuntimeException e) {
       throw e;
     } catch (final Exception e) {
