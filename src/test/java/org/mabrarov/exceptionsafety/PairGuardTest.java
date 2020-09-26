@@ -242,7 +242,7 @@ public class PairGuardTest {
   }
 
   @Test
-  public void test_releaseSecondEmpty_doesNotThrowException() throws Exception {
+  public void test_releaseSecondEmpty_doesNotThrowException() {
     final PairGuard guard = new PairGuard();
     assertThat(guard.releaseSecond(), is(nullValue()));
   }
