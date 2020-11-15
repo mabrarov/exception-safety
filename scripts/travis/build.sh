@@ -24,7 +24,7 @@ if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
   maven_profiles="${maven_profiles:+${maven_profiles},}jacoco"
 fi
 
-if ! [[ "${maven_profiles}" = "" ]]; then
+if [[ -n "${maven_profiles}" ]]; then
   build_cmd="${build_cmd} -P $(printf "%q" "${maven_profiles}")"
 fi
 
