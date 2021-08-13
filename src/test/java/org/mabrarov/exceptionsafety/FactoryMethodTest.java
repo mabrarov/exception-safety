@@ -46,9 +46,16 @@ public class FactoryMethodTest {
   }
 
   private OutputStream createConfiguredResource() throws IOException, TestException {
-    final OutputStream resource = createResource();
-    configureResource(resource);
-    return resource;
+    try (final Guard guard = new Guard()) {
+      final OutputStream resource = guard.set(createResource());
+      configureResource(resource);
+      guard.release();
+      return resource;
+    } catch (final IOException | TestException | RuntimeException e) {
+      throw e;
+    } catch (final Exception e) {
+      throw new AssertionError("Should never come here", e);
+    }
   }
 
   private OutputStream createResource() throws IOException {
