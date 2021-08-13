@@ -32,18 +32,8 @@ public class FactoryMethodTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private final AtomicBoolean resourceClosed = new AtomicBoolean();
-
-  @Test
-  public void test_factoryMethod() {
-    try (final OutputStream resource = createConfiguredResource();
-        final PrintStream printStream = new PrintStream(resource)) {
-      Assert.assertFalse("Resource should be opened", resourceClosed.get());
-      printStream.println("Test");
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
-    Assert.assertTrue("Resource should be closed", resourceClosed.get());
-  }
+  private ResourceCreator resourceCreator;
+  private ResourceConfigurator resourceConfigurator;
 
   private OutputStream createConfiguredResource()
       throws IOException, TestResourceConfigurationException {
@@ -58,30 +48,161 @@ public class FactoryMethodTest {
     return resource;
   }
 
-  private OutputStream createResource() throws IOException {
-    final File file = temporaryFolder.newFile();
-    return new FileOutputStream(file) {
-      @Override
-      public void close() throws IOException {
-        super.close();
-        resourceClosed.set(true);
-        if (Math.random() > 0.5) {
-          throw new TestResourceCloseException();
-        }
-        throw new TestResourceCloseRuntimeException();
-      }
-    };
+  @Test
+  public void test_noExceptions() {
+    resourceCreator = resourceCreatorNoException;
+    resourceConfigurator = resourceConfiguratorNoException;
+    verifyResourceCreationAndClosing();
   }
 
-  private void configureResource(@SuppressWarnings("unused") final OutputStream resource)
-      throws TestResourceConfigurationException {
-    final double random = Math.random();
-    if (random > 0.66) {
+  @Test
+  public void test_configurationCheckedException() {
+    resourceCreator = resourceCreatorNoException;
+    resourceConfigurator = resourceConfiguratorCheckedException;
+    verifyResourceCreationAndClosing();
+  }
+
+  @Test
+  public void test_configurationRuntimeException() {
+    resourceCreator = resourceCreatorNoException;
+    resourceConfigurator = resourceConfiguratorRuntimeException;
+    verifyResourceCreationAndClosing();
+  }
+
+  @Test
+  public void test_closeCheckedException() {
+    resourceCreator = resourceCreatorCheckedException;
+    resourceConfigurator = resourceConfiguratorNoException;
+    verifyResourceCreationAndClosing();
+  }
+
+  @Test
+  public void test_closeRuntimeException() {
+    resourceCreator = resourceCreatorRuntimeException;
+    resourceConfigurator = resourceConfiguratorNoException;
+    verifyResourceCreationAndClosing();
+  }
+
+  @Test
+  public void test_configurationCheckedException_closeCheckedException() {
+    resourceCreator = resourceCreatorCheckedException;
+    resourceConfigurator = resourceConfiguratorCheckedException;
+    verifyResourceCreationAndClosing();
+  }
+
+  @Test
+  public void test_configurationCheckedException_closeRuntimeException() {
+    resourceCreator = resourceCreatorRuntimeException;
+    resourceConfigurator = resourceConfiguratorCheckedException;
+    verifyResourceCreationAndClosing();
+  }
+
+  @Test
+  public void test_configurationRuntimeException_closeCheckedException() {
+    resourceCreator = resourceCreatorRuntimeException;
+    resourceConfigurator = resourceConfiguratorCheckedException;
+    verifyResourceCreationAndClosing();
+  }
+
+  @Test
+  public void test_configurationRuntimeException_closeRuntimeException() {
+    resourceCreator = resourceCreatorRuntimeException;
+    resourceConfigurator = resourceConfiguratorCheckedException;
+    verifyResourceCreationAndClosing();
+  }
+
+  private void verifyResourceCreationAndClosing() {
+    try (final OutputStream resource = createConfiguredResource();
+        final PrintStream printStream = new PrintStream(resource)) {
+      Assert.assertFalse("Resource should be opened", resourceClosed.get());
+      printStream.println("Test");
+    } catch (final Exception e) {
+      e.printStackTrace();
+    }
+    Assert.assertTrue("Resource should be closed", resourceClosed.get());
+  }
+
+  private interface ResourceCreator {
+
+    OutputStream createResource(final File file) throws IOException;
+
+  }
+
+  private interface ResourceConfigurator {
+
+    void configureResource(final OutputStream resource) throws TestResourceConfigurationException;
+
+  }
+
+  private final ResourceCreator resourceCreatorNoException = new ResourceCreator() {
+    @Override
+    public OutputStream createResource(final File file) throws IOException {
+      return new FileOutputStream(file) {
+        @Override
+        public void close() throws IOException {
+          super.close();
+          resourceClosed.set(true);
+        }
+      };
+    }
+  };
+
+  private final ResourceCreator resourceCreatorCheckedException = new ResourceCreator() {
+    @Override
+    public OutputStream createResource(final File file) throws IOException {
+      return new FileOutputStream(file) {
+        @Override
+        public void close() throws IOException {
+          super.close();
+          resourceClosed.set(true);
+          throw new TestResourceCloseException();
+        }
+      };
+    }
+  };
+
+  private final ResourceCreator resourceCreatorRuntimeException = new ResourceCreator() {
+    @Override
+    public OutputStream createResource(final File file) throws IOException {
+      return new FileOutputStream(file) {
+        @Override
+        public void close() throws IOException {
+          super.close();
+          resourceClosed.set(true);
+          throw new TestResourceCloseRuntimeException();
+        }
+      };
+    }
+  };
+
+  private final ResourceConfigurator resourceConfiguratorNoException = new ResourceConfigurator() {
+    @Override
+    public void configureResource(final OutputStream resource) {
+    }
+  };
+
+  private final ResourceConfigurator resourceConfiguratorCheckedException = new ResourceConfigurator() {
+    @Override
+    public void configureResource(final OutputStream resource)
+        throws TestResourceConfigurationException {
       throw new TestResourceConfigurationException();
     }
-    if (random > 0.33) {
+  };
+
+  private final ResourceConfigurator resourceConfiguratorRuntimeException = new ResourceConfigurator() {
+    @Override
+    public void configureResource(final OutputStream resource) {
       throw new TestRuntimeException();
     }
+  };
+
+  private OutputStream createResource() throws IOException {
+    return resourceCreator.createResource(temporaryFolder.newFile());
+  }
+
+  private void configureResource(final OutputStream resource)
+      throws TestResourceConfigurationException {
+    resourceConfigurator.configureResource(resource);
   }
 
 }
