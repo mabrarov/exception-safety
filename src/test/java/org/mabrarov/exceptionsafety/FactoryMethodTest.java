@@ -60,22 +60,28 @@ public class FactoryMethodTest {
   }
 
   private OutputStream createResource() throws IOException {
-    final IOException closeException = new TestResourceCloseException();
     final File file = temporaryFolder.newFile();
     return new FileOutputStream(file) {
       @Override
       public void close() throws IOException {
         super.close();
         resourceClosed.set(true);
-        throw closeException;
+        if (Math.random() > 0.5) {
+          throw new TestResourceCloseException();
+        }
+        throw new TestResourceCloseRuntimeException();
       }
     };
   }
 
   private void configureResource(@SuppressWarnings("unused") final OutputStream resource)
       throws TestResourceConfigurationException {
-    if (Math.random() > 0.5) {
+    final double random = Math.random();
+    if (random > 0.66) {
       throw new TestResourceConfigurationException();
+    }
+    if (random > 0.33) {
+      throw new TestRuntimeException();
     }
   }
 
