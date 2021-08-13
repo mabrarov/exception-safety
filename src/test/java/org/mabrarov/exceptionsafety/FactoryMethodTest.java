@@ -45,27 +45,30 @@ public class FactoryMethodTest {
     Assert.assertTrue("Resource should be closed", resourceClosed.get());
   }
 
-  private OutputStream createConfiguredResource() throws IOException, TestException {
+  private OutputStream createConfiguredResource()
+      throws IOException, TestResourceConfigurationException {
     final OutputStream resource = createResource();
     configureResource(resource);
     return resource;
   }
 
   private OutputStream createResource() throws IOException {
+    final IOException closeException = new TestResourceCloseException();
     final File file = temporaryFolder.newFile();
     return new FileOutputStream(file) {
       @Override
       public void close() throws IOException {
         super.close();
         resourceClosed.set(true);
+        throw closeException;
       }
     };
   }
 
   private void configureResource(@SuppressWarnings("unused") final OutputStream resource)
-      throws TestException {
+      throws TestResourceConfigurationException {
     if (Math.random() > 0.5) {
-      throw new TestException();
+      throw new TestResourceConfigurationException();
     }
   }
 
