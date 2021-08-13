@@ -50,7 +50,7 @@ public class FactoryMethodTest {
     final OutputStream resource = createResource();
     try {
       configureResource(resource);
-    } catch (final TestResourceConfigurationException e) {
+    } catch (final Throwable e) {
       try (@SuppressWarnings("unused") final OutputStream closer = resource) {
         throw e;
       }
