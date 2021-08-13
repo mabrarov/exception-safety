@@ -15,6 +15,9 @@
  */
 package org.mabrarov.exceptionsafety;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,16 +25,27 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
 
 public class FactoryMethodTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+  private final TestResourceConfigurationException resourceConfigurationException = spy(
+      new TestResourceConfigurationException());
+  private final IOException closeException = new TestResourceCloseException();
   private final AtomicBoolean resourceClosed = new AtomicBoolean();
+
+  @Before
+  public void setUp() {
+    doThrow(new TestSuppressionError()).when(resourceConfigurationException)
+        .addSuppressed(ArgumentMatchers.<Throwable>any());
+  }
 
   @Test
   public void test_factoryMethod() {
@@ -60,7 +74,6 @@ public class FactoryMethodTest {
   }
 
   private OutputStream createResource() throws IOException {
-    final IOException closeException = new TestResourceCloseException();
     final File file = temporaryFolder.newFile();
     return new FileOutputStream(file) {
       @Override
@@ -75,7 +88,7 @@ public class FactoryMethodTest {
   private void configureResource(@SuppressWarnings("unused") final OutputStream resource)
       throws TestResourceConfigurationException {
     if (Math.random() > 0.5) {
-      throw new TestResourceConfigurationException();
+      throw resourceConfigurationException;
     }
   }
 
