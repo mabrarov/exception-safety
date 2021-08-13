@@ -48,7 +48,13 @@ public class FactoryMethodTest {
   private OutputStream createConfiguredResource()
       throws IOException, TestResourceConfigurationException {
     final OutputStream resource = createResource();
-    configureResource(resource);
+    try {
+      configureResource(resource);
+    } catch (final TestResourceConfigurationException e) {
+      try (@SuppressWarnings("unused") final OutputStream closer = resource) {
+        throw e;
+      }
+    }
     return resource;
   }
 
