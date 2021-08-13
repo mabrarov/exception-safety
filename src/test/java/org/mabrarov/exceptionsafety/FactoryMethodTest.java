@@ -45,13 +45,14 @@ public class FactoryMethodTest {
     Assert.assertTrue("Resource should be closed", resourceClosed.get());
   }
 
-  private OutputStream createConfiguredResource() throws IOException, TestException {
+  private OutputStream createConfiguredResource()
+      throws IOException, TestResourceConfigurationException {
     try (final Guard guard = new Guard()) {
       final OutputStream resource = guard.set(createResource());
       configureResource(resource);
       guard.release();
       return resource;
-    } catch (final IOException | TestException | RuntimeException e) {
+    } catch (final IOException | TestResourceConfigurationException | RuntimeException e) {
       throw e;
     } catch (final Exception e) {
       throw new AssertionError("Should never come here", e);
@@ -59,20 +60,22 @@ public class FactoryMethodTest {
   }
 
   private OutputStream createResource() throws IOException {
+    final IOException closeException = new TestResourceCloseException();
     final File file = temporaryFolder.newFile();
     return new FileOutputStream(file) {
       @Override
       public void close() throws IOException {
         super.close();
         resourceClosed.set(true);
+        throw closeException;
       }
     };
   }
 
   private void configureResource(@SuppressWarnings("unused") final OutputStream resource)
-      throws TestException {
+      throws TestResourceConfigurationException {
     if (Math.random() > 0.5) {
-      throw new TestException();
+      throw new TestResourceConfigurationException();
     }
   }
 
