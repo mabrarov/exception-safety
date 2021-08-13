@@ -55,71 +55,71 @@ public class FactoryMethodTest {
 
   @Test
   public void test_noExceptions() {
-    resourceCreator = resourceCreatorCloseNoException;
     resourceConfigurator = resourceConfiguratorNoException;
+    resourceCreator = resourceCreatorCloseNoException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationCheckedException() {
-    resourceCreator = resourceCreatorCloseNoException;
     resourceConfigurator = resourceConfiguratorCheckedException;
+    resourceCreator = resourceCreatorCloseNoException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationRuntimeException() {
-    resourceCreator = resourceCreatorCloseNoException;
     resourceConfigurator = resourceConfiguratorRuntimeException;
+    resourceCreator = resourceCreatorCloseNoException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_closeCheckedException() {
-    resourceCreator = resourceCreatorCloseCheckedException;
     resourceConfigurator = resourceConfiguratorNoException;
+    resourceCreator = resourceCreatorCloseCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_closeRuntimeException() {
-    resourceCreator = resourceCreatorCloseRuntimeException;
     resourceConfigurator = resourceConfiguratorNoException;
+    resourceCreator = resourceCreatorCloseRuntimeException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationCheckedException_closeCheckedException() {
-    resourceCreator = resourceCreatorCloseCheckedException;
     resourceConfigurator = resourceConfiguratorCheckedException;
+    resourceCreator = resourceCreatorCloseCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationCheckedException_closeRuntimeException() {
-    resourceCreator = resourceCreatorCloseRuntimeException;
     resourceConfigurator = resourceConfiguratorCheckedException;
+    resourceCreator = resourceCreatorCloseRuntimeException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationRuntimeException_closeCheckedException() {
-    resourceCreator = resourceCreatorCloseRuntimeException;
-    resourceConfigurator = resourceConfiguratorCheckedException;
+    resourceConfigurator = resourceConfiguratorRuntimeException;
+    resourceCreator = resourceCreatorCloseCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationRuntimeException_closeRuntimeException() {
+    resourceConfigurator = resourceConfiguratorRuntimeException;
     resourceCreator = resourceCreatorCloseRuntimeException;
-    resourceConfigurator = resourceConfiguratorCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_exceptionSuppressionError() {
-    resourceCreator = resourceCreatorCloseRuntimeException;
     resourceConfigurator = resourceConfiguratorRuntimeExceptionWithSuppressionFailure;
+    resourceCreator = resourceCreatorCloseRuntimeException;
     verifyResourceCreationAndClosing();
   }
 
