@@ -15,9 +15,9 @@
  */
 package org.mabrarov.exceptionsafety;
 
-public class TestResourceConfigurationException extends Exception {
+public class TestSuppressionError extends Error {
 
-  public TestResourceConfigurationException() {
-    super("Resource configuration failure");
+  public TestSuppressionError() {
+    super("Exception suppression failure");
   }
 }

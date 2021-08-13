@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+ * Copyright (c) 2021 Marat Abrarov (abrarov@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package org.mabrarov.exceptionsafety;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
 
 public class FactoryMethodTest {
 
@@ -111,12 +115,19 @@ public class FactoryMethodTest {
     verifyResourceCreationAndClosing();
   }
 
+  @Test
+  public void test_exceptionSuppressionError() {
+    resourceCreator = resourceCreatorCloseRuntimeException;
+    resourceConfigurator = resourceConfiguratorRuntimeExceptionWithSuppressionFailure;
+    verifyResourceCreationAndClosing();
+  }
+
   private void verifyResourceCreationAndClosing() {
     try (final OutputStream resource = createConfiguredResource();
         final PrintStream printStream = new PrintStream(resource)) {
       Assert.assertFalse("Resource should be opened", resourceClosed.get());
       printStream.println("Test");
-    } catch (final Exception e) {
+    } catch (final Throwable e) {
       e.printStackTrace();
     }
     Assert.assertTrue("Resource should be closed", resourceClosed.get());
@@ -193,6 +204,16 @@ public class FactoryMethodTest {
     @Override
     public void configureResource(final OutputStream resource) {
       throw new TestRuntimeException();
+    }
+  };
+
+  private final ResourceConfigurator resourceConfiguratorRuntimeExceptionWithSuppressionFailure = new ResourceConfigurator() {
+    @Override
+    public void configureResource(final OutputStream resource) {
+      final TestRuntimeException configurationException = spy(new TestRuntimeException());
+      doThrow(new TestSuppressionError()).when(configurationException)
+          .addSuppressed(ArgumentMatchers.<Throwable>any());
+      throw configurationException;
     }
   };
 
