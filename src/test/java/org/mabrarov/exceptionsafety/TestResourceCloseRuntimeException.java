@@ -15,9 +15,11 @@
  */
 package org.mabrarov.exceptionsafety;
 
-public class TestRuntimeException extends RuntimeException {
+import java.io.IOException;
 
-  public TestRuntimeException() {
-    super("Test runtime exception");
+public class TestResourceCloseRuntimeException extends IOException {
+
+  public TestResourceCloseRuntimeException() {
+    super("Resource free runtime failure");
   }
 }
