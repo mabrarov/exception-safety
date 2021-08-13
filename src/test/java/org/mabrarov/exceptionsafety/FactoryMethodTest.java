@@ -121,9 +121,7 @@ public class FactoryMethodTest {
         final PrintStream printStream = new PrintStream(resource)) {
       Assert.assertFalse("Resource should be opened", resourceClosed.get());
       printStream.println("Test");
-    } catch (final AssertionError e) {
-      throw e;
-    } catch (final Throwable e) {
+    } catch (final Exception | TestSuppressionError e) {
       e.printStackTrace();
     }
     Assert.assertTrue("Resource should be closed", resourceClosed.get());
