@@ -51,63 +51,63 @@ public class FactoryMethodTest {
 
   @Test
   public void test_noExceptions() {
-    resourceCreator = resourceCreatorNoException;
+    resourceCreator = resourceCreatorCloseNoException;
     resourceConfigurator = resourceConfiguratorNoException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationCheckedException() {
-    resourceCreator = resourceCreatorNoException;
+    resourceCreator = resourceCreatorCloseNoException;
     resourceConfigurator = resourceConfiguratorCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationRuntimeException() {
-    resourceCreator = resourceCreatorNoException;
+    resourceCreator = resourceCreatorCloseNoException;
     resourceConfigurator = resourceConfiguratorRuntimeException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_closeCheckedException() {
-    resourceCreator = resourceCreatorCheckedException;
+    resourceCreator = resourceCreatorCloseCheckedException;
     resourceConfigurator = resourceConfiguratorNoException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_closeRuntimeException() {
-    resourceCreator = resourceCreatorRuntimeException;
+    resourceCreator = resourceCreatorCloseRuntimeException;
     resourceConfigurator = resourceConfiguratorNoException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationCheckedException_closeCheckedException() {
-    resourceCreator = resourceCreatorCheckedException;
+    resourceCreator = resourceCreatorCloseCheckedException;
     resourceConfigurator = resourceConfiguratorCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationCheckedException_closeRuntimeException() {
-    resourceCreator = resourceCreatorRuntimeException;
+    resourceCreator = resourceCreatorCloseRuntimeException;
     resourceConfigurator = resourceConfiguratorCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationRuntimeException_closeCheckedException() {
-    resourceCreator = resourceCreatorRuntimeException;
+    resourceCreator = resourceCreatorCloseRuntimeException;
     resourceConfigurator = resourceConfiguratorCheckedException;
     verifyResourceCreationAndClosing();
   }
 
   @Test
   public void test_configurationRuntimeException_closeRuntimeException() {
-    resourceCreator = resourceCreatorRuntimeException;
+    resourceCreator = resourceCreatorCloseRuntimeException;
     resourceConfigurator = resourceConfiguratorCheckedException;
     verifyResourceCreationAndClosing();
   }
@@ -135,7 +135,7 @@ public class FactoryMethodTest {
 
   }
 
-  private final ResourceCreator resourceCreatorNoException = new ResourceCreator() {
+  private final ResourceCreator resourceCreatorCloseNoException = new ResourceCreator() {
     @Override
     public OutputStream createResource(final File file) throws IOException {
       return new FileOutputStream(file) {
@@ -148,7 +148,7 @@ public class FactoryMethodTest {
     }
   };
 
-  private final ResourceCreator resourceCreatorCheckedException = new ResourceCreator() {
+  private final ResourceCreator resourceCreatorCloseCheckedException = new ResourceCreator() {
     @Override
     public OutputStream createResource(final File file) throws IOException {
       return new FileOutputStream(file) {
@@ -162,7 +162,7 @@ public class FactoryMethodTest {
     }
   };
 
-  private final ResourceCreator resourceCreatorRuntimeException = new ResourceCreator() {
+  private final ResourceCreator resourceCreatorCloseRuntimeException = new ResourceCreator() {
     @Override
     public OutputStream createResource(final File file) throws IOException {
       return new FileOutputStream(file) {
