@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -41,9 +42,38 @@ public class FactoryMethodTest {
 
   private OutputStream createConfiguredResource()
       throws IOException, TestResourceConfigurationException {
-    final OutputStream resource = createResource();
-    configureResource(resource);
-    return resource;
+    OutputStream resource = null;
+    Throwable throwable = null;
+    Method method = new Object() {}.getClass().getEnclosingMethod();
+    try {
+      resource = createResource();
+      configureResource(resource);
+      return resource;
+
+    } catch (final Throwable e) {
+      throwable = e;
+      Class[] classes = method.getExceptionTypes();
+
+      for (Class exceptionClass : classes) {
+        if (e.getClass().isAssignableFrom(exceptionClass)) {
+          throw e;
+        }
+      }
+      if (RuntimeException.class.isAssignableFrom(e.getClass())) {
+        throw e;
+      }
+
+      throw new AssertionError("Should never come here", e);
+    } finally {
+      if (throwable != null && resource != null) {
+        try {
+          resource.close();
+        } catch (Throwable e) {
+          throwable.addSuppressed(e);
+        }
+
+      }
+    }
   }
 
   @Test
