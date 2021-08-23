@@ -135,7 +135,8 @@ public class FactoryMethodTest {
 
   private interface ResourceConfigurator {
 
-    void configureResource(final OutputStream resource) throws TestResourceConfigurationException;
+    void configureResource(@SuppressWarnings("unused") final OutputStream resource)
+        throws TestResourceConfigurationException;
 
   }
 
