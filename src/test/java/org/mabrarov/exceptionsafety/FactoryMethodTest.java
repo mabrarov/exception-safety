@@ -54,7 +54,7 @@ public class FactoryMethodTest {
         } catch (final Throwable e) {
             throwable = e;
             for (Class exceptionClass : method.getExceptionTypes()) {
-                if (e.getClass().isAssignableFrom(exceptionClass)) {
+                if (exceptionClass.isAssignableFrom(e.getClass())) {
                     throw e;
                 }
             }
