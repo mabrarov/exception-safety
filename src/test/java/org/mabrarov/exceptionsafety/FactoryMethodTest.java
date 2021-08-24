@@ -45,25 +45,22 @@ public class FactoryMethodTest {
       throws IOException, TestResourceConfigurationException {
     OutputStream resource = null;
     Throwable throwable = null;
-    Method method = new Object() {}.getClass().getEnclosingMethod();
+    Method method = new Object() {
+    }.getClass().getEnclosingMethod();
     try {
       resource = createResource();
       configureResource(resource);
       return resource;
-
     } catch (final Throwable e) {
       throwable = e;
-      Class[] classes = method.getExceptionTypes();
-
-      for (Class exceptionClass : classes) {
-        if (e.getClass().isAssignableFrom(exceptionClass)) {
+      for (Class exceptionClass : method.getExceptionTypes()) {
+        if (exceptionClass.isAssignableFrom(e.getClass())) {
           throw e;
         }
       }
-      if (RuntimeException.class.isAssignableFrom(e.getClass())) {
+      if (e instanceof RuntimeException || e instanceof Error) {
         throw e;
       }
-
       throw new AssertionError("Should never come here", e);
     } finally {
       if (throwable != null && resource != null) {
@@ -72,7 +69,6 @@ public class FactoryMethodTest {
         } catch (Throwable e) {
           throwable.addSuppressed(e);
         }
-
       }
     }
   }
