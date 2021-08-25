@@ -43,12 +43,11 @@ public class FactoryMethodTest {
 
   private OutputStream createConfiguredResource()
       throws IOException, TestResourceConfigurationException {
-    OutputStream resource = null;
+    OutputStream resource = createResource();
     Throwable throwable = null;
     Method method = new Object() {
     }.getClass().getEnclosingMethod();
     try {
-      resource = createResource();
       configureResource(resource);
       return resource;
     } catch (final Throwable e) {
@@ -63,7 +62,7 @@ public class FactoryMethodTest {
       }
       throw new AssertionError("Should never come here", e);
     } finally {
-      if (throwable != null && resource != null) {
+      if (throwable != null) {
         try {
           resource.close();
         } catch (Throwable e) {
