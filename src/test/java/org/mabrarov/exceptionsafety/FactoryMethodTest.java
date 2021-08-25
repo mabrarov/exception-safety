@@ -42,13 +42,12 @@ public class FactoryMethodTest {
 
   private OutputStream createConfiguredResource()
       throws IOException, TestResourceConfigurationException {
-    OutputStream resource = null;
+    OutputStream resource = createResource();
     Throwable throwable = null;
     try {
-      resource = createResource();
       configureResource(resource);
       return resource;
-    } catch (final IOException | TestResourceConfigurationException | RuntimeException e) {
+    } catch (final TestResourceConfigurationException | RuntimeException e) {
       throwable = e;
       throw e;
     } catch (final Exception e) {
@@ -58,7 +57,7 @@ public class FactoryMethodTest {
       throwable = e;
       throw e;
     } finally {
-      if (throwable != null && resource != null) {
+      if (throwable != null) {
         try {
           resource.close();
         } catch (Throwable e) {
