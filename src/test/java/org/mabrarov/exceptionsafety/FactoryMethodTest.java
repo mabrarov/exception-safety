@@ -50,10 +50,8 @@ public class FactoryMethodTest {
     } catch (final TestResourceConfigurationException | RuntimeException e) {
       throwable = e;
       throw e;
-    } catch (final Exception e) {
-      throwable = e;
-      throw new AssertionError("Should never come here", e);
-    } catch (final Throwable e) {
+    }
+    catch(final Error e) {
       throwable = e;
       throw e;
     } finally {
