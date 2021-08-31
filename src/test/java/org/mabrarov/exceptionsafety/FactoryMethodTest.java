@@ -54,13 +54,11 @@ public class FactoryMethodTest {
       throwable = e;
       for (Class exceptionClass : method.getExceptionTypes()) {
         if (exceptionClass.isAssignableFrom(e.getClass())) {
+          //other exceptions handing
           throw e;
         }
       }
-      if (e instanceof RuntimeException || e instanceof Error) {
-        throw e;
-      }
-      throw new AssertionError("Should never come here", e);
+     throw e;
     } finally {
       if (throwable != null) {
         try {
