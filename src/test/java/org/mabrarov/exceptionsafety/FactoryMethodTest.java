@@ -23,7 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,9 +43,31 @@ public class FactoryMethodTest {
 
   private OutputStream createConfiguredResource()
       throws IOException, TestResourceConfigurationException {
-    final OutputStream resource = createResource();
-    configureResource(resource);
-    return resource;
+    OutputStream resource = createResource();
+    Throwable throwable = null;
+    Method method = new Object() {
+    }.getClass().getEnclosingMethod();
+    try {
+      configureResource(resource);
+      return resource;
+    } catch (final Throwable e) {
+      throwable = e;
+      for (Class exceptionClass : method.getExceptionTypes()) {
+        if (exceptionClass.isAssignableFrom(e.getClass())) {
+          //other exceptions handing
+          throw e;
+        }
+      }
+     throw e;
+    } finally {
+      if (throwable != null) {
+        try {
+          resource.close();
+        } catch (Throwable e) {
+          throwable.addSuppressed(e);
+        }
+      }
+    }
   }
 
   @Test
@@ -118,7 +142,7 @@ public class FactoryMethodTest {
 
   private void verifyResourceCreationAndClosing() {
     try (final OutputStream resource = createConfiguredResource();
-        final PrintStream printStream = new PrintStream(resource)) {
+         final PrintStream printStream = new PrintStream(resource)) {
       Assert.assertFalse("Resource should be opened", resourceClosed.get());
       printStream.println("Test");
     } catch (final Exception | TestSuppressionError e) {
