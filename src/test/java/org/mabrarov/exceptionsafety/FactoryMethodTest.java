@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
@@ -47,11 +48,10 @@ public class FactoryMethodTest {
     try {
       configureResource(resource);
       return resource;
-    } catch (final TestResourceConfigurationException | RuntimeException e) {
+    } catch (TestResourceConfigurationException | RuntimeException e) {
       throwable = e;
       throw e;
-    }
-    catch(final Error e) {
+    } catch (Error e) {
       throwable = e;
       throw e;
     } finally {
