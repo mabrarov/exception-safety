@@ -48,10 +48,7 @@ public class FactoryMethodTest {
     try {
       configureResource(resource);
       return resource;
-    } catch (TestResourceConfigurationException | RuntimeException e) {
-      throwable = e;
-      throw e;
-    } catch (Error e) {
+    } catch (TestResourceConfigurationException | RuntimeException|Error e) {
       throwable = e;
       throw e;
     } finally {
