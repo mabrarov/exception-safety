@@ -845,4 +845,102 @@ public class NestedGuardTest {
     verify(resource1).close();
   }
 
+  /**
+   * Demonstrates original exception nesting / suppression when exception happens inside try block
+   * and during closing of multiples resources by the try-with-resources statement.
+   */
+  @Test
+  public void test_exceptionAndResourceCloseThrowsException_originalBehavior() throws Exception {
+    final TestException exception = new TestException(0);
+    final TestException closeException1 = new TestException(1);
+    final TestException closeException2 = new TestException(2);
+    final TestException closeException3 = new TestException(3);
+    final TestException closeException4 = new TestException(4);
+    final AutoCloseable resource1 = mock(AutoCloseable.class);
+    doThrow(closeException1).when(resource1).close();
+    final AutoCloseable resource2 = mock(AutoCloseable.class);
+    doThrow(closeException2).when(resource2).close();
+    final AutoCloseable resource3 = mock(AutoCloseable.class);
+    doThrow(closeException3).when(resource3).close();
+    final AutoCloseable resource4 = mock(AutoCloseable.class);
+    doThrow(closeException4).when(resource4).close();
+    try (@SuppressWarnings("unused") final AutoCloseable closer1 = resource1;
+        @SuppressWarnings("unused") final AutoCloseable closer2 = resource2;
+        @SuppressWarnings("unused") final AutoCloseable closer3 = resource3;
+        @SuppressWarnings("unused") final AutoCloseable closer4 = resource4) {
+      throw exception;
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(exception)));
+      final Throwable[] suppressed = e.getSuppressed();
+      assertThat(suppressed, is(arrayWithSize(4)));
+      assertThat(suppressed[0], is(sameInstance((Throwable) closeException4)));
+      assertThat(suppressed[1], is(sameInstance((Throwable) closeException3)));
+      assertThat(suppressed[2], is(sameInstance((Throwable) closeException2)));
+      assertThat(suppressed[3], is(sameInstance((Throwable) closeException1)));
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+  }
+
+  @Test
+  public void test_exceptionAndResourceCloseThrowsException_exceptionIsPropagatedWithSuppressedExceptions()
+      throws Exception {
+    final TestException exception = new TestException(0);
+    final TestException closeException1 = new TestException(1);
+    final TestException closeException2 = new TestException(2);
+    final TestException closeException3 = new TestException(3);
+    final TestException closeException4 = new TestException(4);
+    final NestedGuard guard = new NestedGuard();
+    AutoCloseable resource1 = null;
+    AutoCloseable resource2 = null;
+    AutoCloseable resource3 = null;
+    AutoCloseable resource4 = null;
+    try (@SuppressWarnings("unused") final AutoCloseable closer = guard) {
+      resource1 = mock(AutoCloseable.class);
+      doThrow(closeException1).when(resource1).close();
+      guard.add(resource1);
+
+      resource2 = mock(AutoCloseable.class);
+      doThrow(closeException2).when(resource2).close();
+      guard.add(resource2);
+
+      resource3 = mock(AutoCloseable.class);
+      doThrow(closeException3).when(resource3).close();
+      guard.add(resource3);
+
+      resource4 = mock(AutoCloseable.class);
+      doThrow(closeException4).when(resource4).close();
+      guard.add(resource4);
+
+      throw exception;
+    } catch (final TestException e) {
+      assertThat(e, is(sameInstance(exception)));
+      final Throwable[] suppressed = e.getSuppressed();
+      // NestedGuard doesn't support original behavior demonstrated in
+      // test_exceptionAndResourceCloseThrowsException_originalBehavior test
+      //assertThat(suppressed, is(arrayWithSize(4)));
+      //assertThat(suppressed[0], is(sameInstance((Throwable) closeException4)));
+      //assertThat(suppressed[1], is(sameInstance((Throwable) closeException3)));
+      //assertThat(suppressed[2], is(sameInstance((Throwable) closeException2)));
+      //assertThat(suppressed[3], is(sameInstance((Throwable) closeException1)));
+      assertThat(suppressed, is(arrayWithSize(1)));
+      final Throwable firstSuppressed = suppressed[0];
+      assertThat(firstSuppressed, is(sameInstance((Throwable) closeException4)));
+      final Throwable[] nestedSuppressed = firstSuppressed.getSuppressed();
+      assertThat(nestedSuppressed, is(arrayWithSize(3)));
+      assertThat(nestedSuppressed[0], is(sameInstance((Throwable) closeException3)));
+      assertThat(nestedSuppressed[1], is(sameInstance((Throwable) closeException2)));
+      assertThat(nestedSuppressed[2], is(sameInstance((Throwable) closeException1)));
+    }
+    final InOrder inOrder = inOrder(resource1, resource2, resource3, resource4);
+    inOrder.verify(resource4).close();
+    inOrder.verify(resource3).close();
+    inOrder.verify(resource2).close();
+    inOrder.verify(resource1).close();
+    assertThat(guard.size(), is(4));
+  }
+
 }
