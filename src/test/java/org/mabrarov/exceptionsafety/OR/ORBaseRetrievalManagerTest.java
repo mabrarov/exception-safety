@@ -63,7 +63,7 @@ public class ORBaseRetrievalManagerTest {
     context = transactionContextExceptionInCommitTransactionIsClose;
     try {
       retrieve();
-    } catch (SQLException e) {
+    } catch (Throwable e) {
       Assert.assertFalse("Transaction is opened", context.isBegun());
     }
   }
@@ -77,7 +77,7 @@ public class ORBaseRetrievalManagerTest {
     context = transactionContextExceptionInBeginTransactionIsClose;
     try {
       retrieve();
-    } catch (SQLException e) {
+    } catch (Throwable e) {
       //First Assert is not needed, if test_exception_in_try_blocke_is_supprested_by_finally_blocke_retrieve is passed
       Assert.assertTrue(e instanceof BeginException);
       for (Throwable throwable : e.getSuppressed()) {
@@ -93,22 +93,22 @@ public class ORBaseRetrievalManagerTest {
     context = transactionContextExceptionInRollBackTransactionIsClose;
     try {
       retrieveWithBadParameters();
-    } catch (SQLException e) {
+    } catch (Throwable e) {
       Assert.assertTrue(e instanceof RetrieveExecuteException);
     }
   }
 
   /*using two place for same logs e.printStackTrace() and _log.error("Got an error " + e.getErrorCode()).
   Maybe, that is not a mistake*/
-  @Test
-  public void test_same_logs_in_two_different_place_retrieve() throws Exception {
-    /* no test, look at logs nad console to see it */
-    context = transactionContextExceptionInBeginTransactionIsClose;
-    retrieve();
-    if(true){
-      throw new Exception();
-    }
-  }
+//  @Test
+//  public void test_same_logs_in_two_different_place_retrieve() throws Exception {
+//    /* no test, look at logs nad console to see it */
+//    context = transactionContextExceptionInBeginTransactionIsClose;
+//    retrieve();
+//    if(true){
+//      throw new Exception();
+//    }
+//  }
 
   /*Exception originally thrown in the try block by retrieveExecute(parameters, context) is  suppressed
   by  SQLException("Error rolling back transaction: " + e.getMessage())in the finally block, if rolling back is fail.
@@ -118,22 +118,22 @@ public class ORBaseRetrievalManagerTest {
     context = transactionContextExceptionInRollBackTransactionIsClose;
     try {
       retrieveWithoutCommitWithBadParameters();
-    } catch (SQLException e) {
+    } catch (Throwable e) {
       Assert.assertTrue("Other Exception" + e.getMessage(),e instanceof RetrieveExecuteException);
     }
   }
 
   /*The SQLException is thrown by context.begin()  is put in log twice.
   Duplication takes memory for logs, reading of logs becomes harder.*/
-  @Test
-  public void test_duplication_of_logs() throws Exception {
-    /* no test, look at logs to see it */
-    context = transactionContextExceptionInBeginTransactionIsClose;
-    retrieveWithoutCommit();
-    if(true){
-      throw new Exception();
-    }
-  }
+//  @Test
+//  public void test_duplication_of_logs() throws Exception {
+//    /* no test, look at logs to see it */
+//    context = transactionContextExceptionInBeginTransactionIsClose;
+//    retrieveWithoutCommit();
+//    if(true){
+//      throw new Exception();
+//    }
+//  }
 
   private class ORTransactionContextEx extends ORTransactionContext {
     boolean isBegun;
@@ -244,3 +244,4 @@ public class ORBaseRetrievalManagerTest {
   }
 
 }
+
