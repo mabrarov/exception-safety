@@ -10,16 +10,16 @@ public abstract class ORBaseRetrievalManager {
 
   public Object retrieve(final Map<String, Object> parameters, final ORTransactionContext context)
       throws SQLException {
-    if(!context.isBegun()){
-      return retrieveWhereTransactionIsClose(parameters,context);
+    if (!context.isBegun()) {
+      return retrieveWhereTransactionIsClose(parameters, context);
     }
-    return retrieveWhereTransactionIsOpen(parameters,context);
+    return retrieveWhereTransactionIsOpen(parameters, context);
   }
 
 
   private void rollbackAfterException(final ORTransactionContext context, Throwable e) throws SQLException {
     try {
-        context.rollback();
+      context.rollback();
     } catch (final Throwable ex) {
       e.addSuppressed(ex);
     }
@@ -27,9 +27,9 @@ public abstract class ORBaseRetrievalManager {
 
   private void commit(final ORTransactionContext context) throws SQLException {
     try {
-        context.commit();
+      context.commit();
     } catch (final Throwable ex) {
-      rollbackAfterException(context,ex);
+      rollbackAfterException(context, ex);
       throwSQLExceptionOrRuntimeOrError(ex);
     }
   }
@@ -41,7 +41,7 @@ public abstract class ORBaseRetrievalManager {
     if (e instanceof SQLException) {
       throw (SQLException) e;
     }
-    if(e instanceof RuntimeException) {
+    if (e instanceof RuntimeException) {
       throw (RuntimeException) e;
     }
     throw (Error) e;
@@ -56,8 +56,10 @@ public abstract class ORBaseRetrievalManager {
       throw e;
     }
   }
+
   private Object retrieveWhereTransactionIsClose(final Map<String, Object> parameters,
                                                  final ORTransactionContext context) throws SQLException {
+    Object o;
     try {
       context.begin();
     } catch (Throwable e) {
@@ -65,18 +67,18 @@ public abstract class ORBaseRetrievalManager {
       throwSQLExceptionOrRuntimeOrError(e);
     }
     try {
-      return retrieveExecute(parameters, context);
+       o = retrieveExecute(parameters, context);
+       commit(context);
+       return o;
     } catch (Throwable e) {
       _log.error(e);
-      rollbackAfterException(context,e);
+      rollbackAfterException(context, e);
       throw e;
     }
-    finally {
-      commit(context);
-    }
   }
+
   private Object retrieveWhereTransactionIsCloseWithoutCommit(final Map<String, Object> parameters,
-                                                 final ORTransactionContext context) throws SQLException {
+                                                              final ORTransactionContext context) throws SQLException {
     try {
       context.begin();
     } catch (Throwable e) {
@@ -87,17 +89,17 @@ public abstract class ORBaseRetrievalManager {
       return retrieveExecute(parameters, context);
     } catch (Throwable e) {
       _log.error(e);
-      rollbackAfterException(context,e);
+      rollbackAfterException(context, e);
       throw e;
     }
   }
 
   public Object retrieveWithoutCommit(final Map<String, Object> parameters,
                                       final ORTransactionContext context) throws SQLException {
-    if(!context.isBegun()){
-      return retrieveWhereTransactionIsCloseWithoutCommit(parameters,context);
+    if (!context.isBegun()) {
+      return retrieveWhereTransactionIsCloseWithoutCommit(parameters, context);
     }
-    return retrieveWhereTransactionIsOpen(parameters,context);
+    return retrieveWhereTransactionIsOpen(parameters, context);
   }
 
   protected abstract Object retrieveExecute(Map<String, Object> parameters,
