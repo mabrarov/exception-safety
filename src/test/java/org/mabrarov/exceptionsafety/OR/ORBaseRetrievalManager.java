@@ -17,7 +17,7 @@ public abstract class ORBaseRetrievalManager {
   }
 
 
-  private void rollbackAfterException(final ORTransactionContext context, Throwable e) throws SQLException {
+  private void rollbackAfterException(final ORTransactionContext context, Throwable e){
     try {
       context.rollback();
     } catch (final Throwable ex) {
@@ -43,6 +43,9 @@ public abstract class ORBaseRetrievalManager {
     }
     if (e instanceof RuntimeException) {
       throw (RuntimeException) e;
+    }
+    if (e instanceof Exception) {
+      throw new SQLException(e);
     }
     throw (Error) e;
   }
