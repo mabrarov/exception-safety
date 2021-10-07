@@ -10,80 +10,101 @@ public abstract class ORBaseRetrievalManager {
 
   public Object retrieve(final Map<String, Object> parameters, final ORTransactionContext context)
       throws SQLException {
-    boolean startTrans = false;
-    boolean error = false;
-    Object obj = null;
-
-    try {
-      if (!context.isBegun()) {
-        startTrans = true;
-        try {
-          context.begin();
-        } catch (final Exception e) {
-          e.printStackTrace();
-          throw new SQLException("Error starting transaction: " + e.getMessage());
-        }
-      }
-      obj = retrieveExecute(parameters, context);
-    } catch (final SQLException e) {
-      error = true;
-      _log.error("Got an error " + e.getErrorCode());
-      throw e;
-    } finally {
-      if (startTrans) {
-        if (error) {
-          try {
-            context.rollback();
-          } catch (final Exception e) {
-            throw new SQLException("Error rolling back transaction: " + e.getMessage());
-          }
-        } else {
-          try {
-            context.commit();
-          } catch (final Exception e) {
-            throw new SQLException("Error committing transaction: " + e.getMessage());
-          }
-        }
-      }
+    if (!context.isBegun()) {
+      return retrieveWhereTransactionIsClose(parameters, context);
     }
-    return obj;
+    return retrieveWhereTransactionIsOpen(parameters, context);
   }
 
 
+  private void rollbackAfterException(final ORTransactionContext context, Throwable e){
+    try {
+      context.rollback();
+    } catch (final Throwable ex) {
+      e.addSuppressed(ex);
+    }
+  }
+
+  private void commit(final ORTransactionContext context) throws SQLException {
+    try {
+      context.commit();
+    } catch (final Throwable ex) {
+      rollbackAfterException(context, ex);
+      throwSQLExceptionOrRuntimeOrError(ex);
+    }
+  }
+
+  private void throwSQLExceptionOrRuntimeOrError(Throwable e) throws SQLException {
+    if (e == null) {
+      return;
+    }
+    if (e instanceof SQLException) {
+      throw (SQLException) e;
+    }
+    if (e instanceof RuntimeException) {
+      throw (RuntimeException) e;
+    }
+    if (e instanceof Exception) {
+      throw new SQLException(e);
+    }
+    throw (Error) e;
+  }
+
+  private Object retrieveWhereTransactionIsOpen(final Map<String, Object> parameters,
+                                                final ORTransactionContext context) throws SQLException {
+    try {
+      return retrieveExecute(parameters, context);
+    } catch (Throwable e) {
+      _log.error(e);
+      throw e;
+    }
+  }
+
+  private Object retrieveWhereTransactionIsClose(final Map<String, Object> parameters,
+                                                 final ORTransactionContext context) throws SQLException {
+    Object o;
+    try {
+      context.begin();
+    } catch (Throwable e) {
+      _log.error(e);
+      throwSQLExceptionOrRuntimeOrError(e);
+    }
+    try {
+       o = retrieveExecute(parameters, context);
+       commit(context);
+       return o;
+    } catch (Throwable e) {
+      _log.error(e);
+      rollbackAfterException(context, e);
+      throw e;
+    }
+  }
+
+  private Object retrieveWhereTransactionIsCloseWithoutCommit(final Map<String, Object> parameters,
+                                                              final ORTransactionContext context) throws SQLException {
+    try {
+      context.begin();
+    } catch (Throwable e) {
+      _log.error(e);
+      throwSQLExceptionOrRuntimeOrError(e);
+    }
+    try {
+      return retrieveExecute(parameters, context);
+    } catch (Throwable e) {
+      _log.error(e);
+      rollbackAfterException(context, e);
+      throw e;
+    }
+  }
+
   public Object retrieveWithoutCommit(final Map<String, Object> parameters,
                                       final ORTransactionContext context) throws SQLException {
-    boolean startTrans = false;
-    boolean error = false;
-    Object obj = null;
-    try {
-      if (!context.isBegun()) {
-        try {
-          context.begin();
-          startTrans = true;
-        } catch (final Exception e) {
-          _log.error("Error starting transaction", e);
-          throw new SQLException("Error starting transaction: " + e.getMessage());
-        }
-      }
-      obj = retrieveExecute(parameters, context);
-    } catch (final SQLException e) {
-      error = true;
-      _log.error("Got an error " + e.getErrorCode());
-      throw e;
-    } finally {
-      if (startTrans && error) {
-        try {
-          context.rollback();
-        } catch (final Exception e) {
-          throw new SQLException("Error rolling back transaction: " + e.getMessage(), e);
-        }
-      }
+    if (!context.isBegun()) {
+      return retrieveWhereTransactionIsCloseWithoutCommit(parameters, context);
     }
-    return obj;
+    return retrieveWhereTransactionIsOpen(parameters, context);
   }
 
   protected abstract Object retrieveExecute(Map<String, Object> parameters,
                                             ORTransactionContext context) throws SQLException;
-
-
 }
