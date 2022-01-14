@@ -15,7 +15,7 @@
         <resource.delimiter>@</resource.delimiter>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <mockito.version>3.5.5</mockito.version>
+        <mockito.version>4.2.0</mockito.version>
     </properties>
 
     <dependencyManagement>
@@ -23,7 +23,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.2</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
@@ -62,7 +62,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.3.0</version>
                     <configuration>
                         <delimiters>
                             <delimiter>${resource.delimiter}</delimiter>
@@ -77,7 +77,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M2</version>
+                    <version>3.0.0-M3</version>
                     <configuration>
                         <rules>
                             <requireMavenVersion>
@@ -114,7 +114,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.2.2</version>
                     <configuration>
                         <archive>
                             <manifestEntries>
@@ -126,7 +126,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.2.0</version>
                     <configuration>
                         <delimiters>
                             <delimiter>${resource.delimiter}</delimiter>
@@ -137,7 +137,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M3</version>
+                    <version>3.0.0-M5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -147,7 +147,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.4</version>
+                    <version>0.8.7</version>
                 </plugin>
             </plugins>
         </pluginManagement>
