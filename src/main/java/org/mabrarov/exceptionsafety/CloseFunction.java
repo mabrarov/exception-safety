@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+ * Copyright (c) 2021 Marat Abrarov (abrarov@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
  */
 package org.mabrarov.exceptionsafety;
 
-public class Guard extends GenericGuard<AutoCloseable> {
+@FunctionalInterface
+public interface CloseFunction<T> {
 
-  public Guard() {
-    super(AutoCloseable::close);
-  }
+  void apply(final T t) throws Exception;
 
 }
