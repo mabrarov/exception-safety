@@ -18,6 +18,9 @@ environment:
     - JDK_VERSION: '14'
     - JDK_VERSION: '8'
     - JDK_VERSION: '11'
+    - JDK_VERSION: '17'
+    - JDK_VERSION: '21'
+      MAVEN_BUILD_OPTIONS: '"-Dmaven.compiler.source=1.8" "-Dmaven.compiler.target=1.8" "-Dmockito.version=5.15.2" "-DargLine=-XX:+EnableDynamicAgentLoading"'
 
 cache:
   - 'C:\Users\appveyor\.m2\repository -> appveyor.yml'
