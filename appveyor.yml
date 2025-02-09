@@ -7,7 +7,7 @@ environment:
   MAVEN_WRAPPER: '0'
   COVERAGE_BUILD: '0'
   PIP_RETRY: '10'
-  CODECOV_VERSION: '2.1.7'
+  CODECOV_VERSION: '2.1.13'
 
   matrix:
     - JDK_VERSION: '7'
