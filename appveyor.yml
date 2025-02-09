@@ -13,14 +13,19 @@ environment:
     - JDK_VERSION: '7'
       COVERAGE_BUILD: '1'
       MAVEN_BUILD_OPTIONS: '"-Dmockito.version=2.28.2"'
+      CODECOV_FLAG: "jdk7"
     - JDK_VERSION: '11'
       MAVEN_WRAPPER: '1'
     - JDK_VERSION: '14'
     - JDK_VERSION: '8'
     - JDK_VERSION: '11'
     - JDK_VERSION: '17'
+      COVERAGE_BUILD: '1'
+      CODECOV_FLAG: "jdk17"
     - JDK_VERSION: '21'
-      MAVEN_BUILD_OPTIONS: '"-Dmaven.compiler.source=1.8" "-Dmaven.compiler.target=1.8" "-Dmockito.version=5.15.2" "-DargLine=-XX:+EnableDynamicAgentLoading"'
+      COVERAGE_BUILD: '1'
+      MAVEN_BUILD_OPTIONS: '"-Dmaven.compiler.source=1.8" "-Dmaven.compiler.target=1.8" "-Dmockito.version=5.15.2" "-DargLine=@{argLine} -XX:+EnableDynamicAgentLoading"'
+      CODECOV_FLAG: "jdk21"
 
 cache:
   - 'C:\Users\appveyor\.m2\repository -> appveyor.yml'
